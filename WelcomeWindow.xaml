@@ -36,7 +36,7 @@
                     <Run FontWeight="SemiBold" Text="Este mes: "/><Run Text="lo que entró, lo que gastaste y cuánta plata vas a tener a fin de mes."/>
                 </TextBlock>
                 <TextBlock Style="{StaticResource HelpBody}" Margin="0,0,0,8">
-                    <Run FontWeight="SemiBold" Text="Movimientos: "/><Run Text="donde anotás cada ingreso y cada gasto (o los importás desde un CSV)."/>
+                    <Run FontWeight="SemiBold" Text="Movimientos: "/><Run Text="donde anotás cada ingreso y cada gasto (o los importás desde un CSV o un Excel)."/>
                 </TextBlock>
                 <TextBlock Style="{StaticResource HelpBody}" Margin="0,0,0,8">
                     <Run FontWeight="SemiBold" Text="Recurrentes, Presupuestos y Metas: "/><Run Text="lo que se repite cada mes, tus límites de gasto y lo que querés juntar."/>

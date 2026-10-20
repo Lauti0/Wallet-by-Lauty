@@ -535,10 +535,10 @@
                 <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                     <StackPanel>
                         <DockPanel Margin="0,0,0,12">
-                        <Button DockPanel.Dock="Right" Content="Importar desde CSV…" Style="{StaticResource ConfirmButton}"
+                        <Button DockPanel.Dock="Right" Content="Importar desde CSV o Excel…" Style="{StaticResource ConfirmButton}"
                                 Padding="14,6" Command="{Binding ImportCsvCommand}"
                                 ToolTip="Cargar muchos movimientos juntos desde el archivo que descargás del banco"
-                                AutomationProperties.Name="Importar movimientos desde un CSV"/>
+                                AutomationProperties.Name="Importar movimientos desde un archivo CSV o Excel"/>
                         <!-- "Nuevo movimiento" o "Editar movimiento" (en azul para que se note que se está editando) -->
                         <TextBlock Text="{Binding TransactionFormTitle}" VerticalAlignment="Center">
                             <TextBlock.Style>
@@ -1476,7 +1476,7 @@
                             </TextBlock>
                             <TextBlock Style="{StaticResource HelpBody}">
                                 <Run FontWeight="SemiBold" Text="3. Cargá tus movimientos. "/>
-                                <Run Text="En Movimientos anotá cada ingreso y cada gasto. Si tu banco te deja bajar el extracto en CSV, usá «Importar desde CSV…» en esa misma pestaña y te ahorrás tipear."/>
+                                <Run Text="En Movimientos anotá cada ingreso y cada gasto. Si tu banco te deja bajar el extracto en CSV o en Excel (.xlsx), usá «Importar desde CSV o Excel…» en esa misma pestaña y te ahorrás tipear."/>
                             </TextBlock>
                             <TextBlock Style="{StaticResource HelpBody}">
                                 <Run FontWeight="SemiBold" Text="4. Anotá lo que se repite todos los meses "/>

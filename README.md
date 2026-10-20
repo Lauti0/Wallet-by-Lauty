@@ -13,7 +13,7 @@ App de escritorio para Windows que administra tus finanzas personales: cuánta p
 - **Cotización del dólar** cargada a mano o traída de internet (oficial, blue, MEP, CCL o tarjeta; compra o venta; opcionalmente una vez por día), y patrimonio total en pesos y en dólares. Cada cotización guarda de dónde salió.
 - **Panorama general** con totales históricos, promedios, gráficos mes a mes y en qué se gasta más.
 - **Exportar** todo a Excel (`.xlsx`, una hoja por tema) y los movimientos a CSV.
-- **Importar movimientos desde el CSV del banco**: un asistente detecta el formato (separador, codificación, fechas, números, columnas de débito y crédito) y muestra una vista previa antes de guardar. Omite los movimientos que ya existen, así que se puede importar el mismo extracto dos veces sin duplicar, y hace un respaldo antes de importar.
+- **Importar movimientos desde el CSV o el Excel (`.xlsx`) del banco**: un asistente detecta el formato (separador, codificación, hoja, fechas, números, columnas de débito y crédito) y muestra una vista previa antes de guardar. En un Excel con varias hojas se elige cuál importar; los `.xls` antiguos y los `.xlsm` hay que guardarlos antes como `.xlsx` o CSV. Omite los movimientos que ya existen, así que se puede importar el mismo extracto dos veces sin duplicar, y hace un respaldo antes de importar.
 - **Modo oscuro**: tema claro, oscuro o "según Windows" (sigue el cambio del sistema), que se elige en la pestaña Cuentas y se aplica al instante.
 - **Recorrido de bienvenida** de 3 pasos, solo la primera vez y solo a quien arranca de cero (quien ya tiene movimientos no lo ve). Se puede repetir desde la pestaña *Ayuda*.
 - **Ayuda** dentro de la app (pestaña *Ayuda*): primeros pasos, dónde ver cada dato, cosas que conviene saber y qué hacer si algo sale mal. Funciona sin internet.
@@ -84,7 +84,7 @@ Es una app local sin servidor ni puertos abiertos, por lo que los ataques de den
 - Tope en montos (hasta 1.000.000.000.000) y en la longitud de textos; límite de tamaño del registro de errores; rotación de respaldos.
 - Errores inesperados: aviso al usuario y registro, en vez de cierre brusco.
 - Exportación a CSV con protección contra inyección de fórmulas en Excel.
-- Importación de CSV con topes (archivo de hasta 10 MB, 50.000 filas, 50 columnas, textos recortados), sin ejecutar nada del archivo, y todo o nada al guardar.
+- Importación de CSV y Excel con topes (archivo de hasta 10 MB, 50.000 filas, 50 columnas, textos recortados; un `.xlsx` que declara más de 100 MB descomprimido se rechaza), sin ejecutar nada del archivo (ni macros ni fórmulas) y todo o nada al guardar.
 - Copia de la base con la API nativa de SQLite y verificación de integridad antes de restaurar.
 
 ## Estructura
@@ -92,7 +92,7 @@ Es una app local sin servidor ni puertos abiertos, por lo que los ataques de den
 ```
 App.xaml(.cs)          Arranque: instancia única, respaldo diario, manejo de errores
 MainWindow.xaml(.cs)   Interfaz (menú lateral y páginas)
-ImportWindow.xaml(.cs) Asistente de importación de CSV
+ImportWindow.xaml(.cs) Asistente de importación de CSV y Excel
 WelcomeWindow.xaml(.cs) Recorrido de bienvenida
 Themes/Styles.xaml     Paleta y estilos
 ViewModels/            Lógica de pantalla (MainViewModel dividido en archivos por tema)

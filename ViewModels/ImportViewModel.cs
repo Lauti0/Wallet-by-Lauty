@@ -31,6 +31,9 @@ public class ImportViewModel : ViewModelBase
 
     private string _text = "";
     private string _encoding = "";
+    private bool _isExcel;
+    private string? _excelPath, _selectedSheet;
+    private List<string> _sheets = [];
     private List<string[]> _allRows = [];
     private List<ImportRow> _rows = [];
     private bool _loading;
@@ -47,7 +50,7 @@ public class ImportViewModel : ViewModelBase
     private Choice<DateStyle> _dateStyle;
     private Choice<DecimalStyle> _decimalStyle;
     private Category? _defaultExpense, _defaultIncome;
-    private string _summary = "Elegí un archivo CSV para empezar.";
+    private string _summary = "Elegí un archivo CSV o Excel para empezar.";
     private string _importText = "Importar";
     private bool _canImport;
 
@@ -99,6 +102,43 @@ public class ImportViewModel : ViewModelBase
     public List<Choice<DateStyle>> DateStyles { get; }
     public List<Choice<DecimalStyle>> DecimalStyles { get; }
     public List<ColumnOption> Columns { get => _columns; private set => Set(ref _columns, value); }
+
+    // Excel: el archivo puede traer varias hojas, y no tiene separador de columnas
+    public bool IsExcel
+    {
+        get => _isExcel;
+        private set
+        {
+            if (_isExcel == value) return;
+            Set(ref _isExcel, value);
+            Raise(nameof(IsCsv));
+        }
+    }
+
+    public bool IsCsv => !_isExcel;
+
+    public List<string> Sheets
+    {
+        get => _sheets;
+        private set
+        {
+            Set(ref _sheets, value);
+            Raise(nameof(HasSeveralSheets));
+        }
+    }
+
+    public bool HasSeveralSheets => _sheets.Count > 1;
+
+    public string? SelectedSheet
+    {
+        get => _selectedSheet;
+        set
+        {
+            if (value is null || _selectedSheet == value) return;
+            Set(ref _selectedSheet, value);
+            if (!_loading) LoadSelectedSheet();
+        }
+    }
     public ObservableCollection<ImportPreviewRow> Preview { get; } = [];
 
     // ───────────── Estado visible ─────────────
@@ -200,20 +240,38 @@ public class ImportViewModel : ViewModelBase
     {
         var dialog = new OpenFileDialog
         {
-            Title = "Elegí el archivo CSV del banco",
-            Filter = "Archivos CSV o de texto (*.csv;*.txt)|*.csv;*.txt|Todos los archivos (*.*)|*.*"
+            Title = "Elegí el archivo del banco (CSV o Excel)",
+            Filter = "Extractos (*.csv;*.txt;*.xlsx)|*.csv;*.txt;*.xlsx|Todos los archivos (*.*)|*.*"
         };
         if (dialog.ShowDialog() != true) return;
         LoadFile(dialog.FileName);
     }
 
-    /// <summary>Lee el archivo, detecta su formato y arma la vista previa.</summary>
+    /// <summary>Lee el archivo (CSV o Excel .xlsx), detecta su formato y arma la vista previa.</summary>
     public void LoadFile(string path)
     {
+        var extension = Path.GetExtension(path).ToLowerInvariant();
+        if (extension == ".xlsx")
+        {
+            LoadExcel(path);
+            return;
+        }
+        if (extension is ".xls" or ".xlsm" or ".xlsb")
+        {
+            MessageBox.Show(
+                "Ese tipo de Excel no se puede leer (los .xls antiguos y los que tienen macros).\n\n" +
+                "Abrilo en Excel y guardalo como «Libro de Excel (.xlsx)» o como CSV, y elegí ese archivo.",
+                "Importar", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
         try
         {
             _text = CsvImportService.ReadText(path, out _encoding);
             FileName = Path.GetFileName(path);
+            _excelPath = null;
+            IsExcel = false;
+            Sheets = [];
 
             _loading = true;
             var detected = CsvImportService.DetectDelimiter(_text);
@@ -240,6 +298,14 @@ public class ImportViewModel : ViewModelBase
             MessageBox.Show(ex.Message, "Importar", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
+        FinishLoad(guessLayout, _allRows.Count == 0
+            ? ""
+            : $"Codificación: {_encoding}  ·  {_allRows.Count:N0} filas  ·  {_allRows.Max(r => r.Length)} columnas");
+    }
+
+    // Ya con las filas leídas (de un CSV o de una hoja de Excel): propone dónde empieza la tabla y qué es cada columna.
+    private void FinishLoad(bool guessLayout, string info)
+    {
         if (guessLayout)
         {
             _loading = true;
@@ -249,10 +315,57 @@ public class ImportViewModel : ViewModelBase
             _loading = false;
         }
 
-        FileInfo = _allRows.Count == 0
-            ? ""
-            : $"Codificación: {_encoding}  ·  {_allRows.Count:N0} filas  ·  {_allRows.Max(r => r.Length)} columnas";
+        FileInfo = info;
         RebuildColumns();
+    }
+
+    // ───────────── Excel ─────────────
+
+    private void LoadExcel(string path)
+    {
+        try
+        {
+            var names = ExcelImportService.GetSheetNames(path);
+            if (names.Count == 0) throw new InvalidDataException("El archivo Excel no tiene hojas con datos.");
+            var rows = ExcelImportService.ReadRows(path, names[0]);
+
+            _loading = true;
+            _text = "";
+            _excelPath = path;
+            IsExcel = true;
+            Sheets = names;
+            SelectedSheet = names[0];
+            FileName = Path.GetFileName(path);
+            _loading = false;
+
+            ShowSheet(rows);
+        }
+        catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException)
+        {
+            MessageBox.Show(ex.Message, "Importar", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    // El usuario eligió otra hoja del mismo libro.
+    private void LoadSelectedSheet()
+    {
+        if (_excelPath is null || _selectedSheet is null) return;
+        try
+        {
+            ShowSheet(ExcelImportService.ReadRows(_excelPath, _selectedSheet));
+        }
+        catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException)
+        {
+            MessageBox.Show(ex.Message, "Importar", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void ShowSheet(List<string[]> rows)
+    {
+        _allRows = rows;
+        FinishLoad(guessLayout: true, rows.Count == 0
+            ? ""
+            : $"Excel  ·  hoja «{_selectedSheet}»  ·  {rows.Count:N0} filas  ·  {rows.Max(r => r.Length)} columnas");
     }
 
     private int SkipRows => int.TryParse(SkipRowsText, out var n) && n >= 0 ? Math.Min(n, _allRows.Count) : 0;
@@ -317,7 +430,7 @@ public class ImportViewModel : ViewModelBase
         var data = DataRows();
         if (_allRows.Count == 0 || data.Count == 0)
         {
-            Summary = _allRows.Count == 0 ? "Elegí un archivo CSV para empezar." : "No hay filas de datos con esa configuración.";
+            Summary = _allRows.Count == 0 ? "Elegí un archivo CSV o Excel para empezar." : "No hay filas de datos con esa configuración.";
             UpdateImportState();
             return;
         }

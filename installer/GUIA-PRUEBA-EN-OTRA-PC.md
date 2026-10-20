@@ -117,7 +117,7 @@ Marcá cada punto. Es una prueba de humo: no hace falta revisar cada número, s�
 **Datos**
 - [ ] **Exportar todo a Excel**: elegir dónde guardar y abrir el archivo.
 - [ ] **Respaldar ahora**: aparece el respaldo en la lista.
-- [ ] **Importar desde CSV…** (en Movimientos): si tenés un CSV de ejemplo, probarlo.
+- [ ] **Importar desde CSV o Excel…** (en Movimientos): si tenés un extracto de ejemplo, probarlo en CSV y en `.xlsx`. Con un Excel de varias hojas, tiene que aparecer el selector "Hoja del Excel".
 
 **Apariencia y ayuda**
 - [ ] En **Cuentas → Apariencia**, cambiar entre Claro, Oscuro y Según Windows.
