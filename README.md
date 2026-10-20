@@ -15,7 +15,7 @@ App de escritorio para Windows que administra tus finanzas personales: cuánta p
 - **Exportar** todo a Excel (`.xlsx`, una hoja por tema) y los movimientos a CSV.
 - **Importar movimientos desde el CSV del banco**: un asistente detecta el formato (separador, codificación, fechas, números, columnas de débito y crédito) y muestra una vista previa antes de guardar. Omite los movimientos que ya existen, así que se puede importar el mismo extracto dos veces sin duplicar, y hace un respaldo antes de importar.
 - **Editar movimientos** ya cargados.
-- **Reglas de categorías** ("si la descripción contiene *carrefour*, la categoría es Supermercado"): se aplican al importar, se sugieren al escribir un movimiento y pueden recategorizar lo que quedó en "Otros". Vienen unas reglas de ejemplo que se pueden cambiar o borrar.
+- **Reglas de categorías** ("si la descripción contiene *carrefour*, la categoría es Supermercado"): se aplican al importar, se sugieren al escribir un movimiento y pueden recategorizar lo que quedó en "Otros". Vienen unas reglas de ejemplo que se pueden cambiar o borrar. Cuando corregís la categoría de un movimiento, la app ofrece crear la regla para recordarlo (con el texto sugerido, que se puede editar).
 - **Respaldos automáticos** diarios, con copia opcional en otra carpeta (por ejemplo OneDrive) y restauración.
 
 ## Requisitos y cómo ejecutarla

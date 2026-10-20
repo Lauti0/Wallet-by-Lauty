@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Windows;
 using CholinanzasApp.Data;
 using CholinanzasApp.Models;
+using CholinanzasApp.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace CholinanzasApp.ViewModels;
@@ -434,6 +435,13 @@ public partial class MainViewModel : ViewModelBase
             return;
         }
 
+        // lo necesario para detectar una corrección de categoría y ofrecer una regla al terminar
+        var description = NewDescription.Trim();
+        var type = NewType;
+        var chosen = NewCategory;
+        var ruleBefore = CategoryRuleService.FindMatch(description, type, _rules);
+        int? previousCategoryId = null;
+
         using (var db = new AppDbContext())
         {
             if (_editingId is { } id)
@@ -446,6 +454,7 @@ public partial class MainViewModel : ViewModelBase
                     ClearTransactionForm();
                     return;
                 }
+                previousCategoryId = existing.CategoryId;
                 existing.Date = NewDate.Date;
                 existing.Amount = amount;
                 existing.Type = NewType;
@@ -477,6 +486,13 @@ public partial class MainViewModel : ViewModelBase
         }
 
         ClearTransactionForm();
+
+        // Una corrección es: al editar, haber cambiado la categoría; al agregar, haber elegido una distinta
+        // de la que sugería una regla. En esos casos se ofrece que la app lo recuerde.
+        var corrected = previousCategoryId is { } before
+            ? before != chosen.Id
+            : ruleBefore is not null && ruleBefore.CategoryId != chosen.Id;
+        if (corrected) OfferRule(description, type, chosen, ruleBefore);
     }
 
     // Carga el movimiento en el formulario para modificarlo.

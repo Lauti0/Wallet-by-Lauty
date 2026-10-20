@@ -412,7 +412,8 @@ public class ImportViewModel : ViewModelBase
         if (SelectedAccount is null || chosen.Count == 0) return;
 
         var answer = MessageBox.Show(
-            $"Se van a importar {chosen.Count:N0} movimientos a la cuenta \"{SelectedAccount.Name}\".\n\n" +
+            (chosen.Count == 1 ? "Se va a importar 1 movimiento" : $"Se van a importar {chosen.Count:N0} movimientos") +
+            $" a la cuenta \"{SelectedAccount.Name}\".\n\n" +
             "Antes se hace un respaldo automático de tus datos, por si querés volver atrás.\n\n¿Continuar?",
             "Importar", MessageBoxButton.YesNo, MessageBoxImage.Question);
         if (answer != MessageBoxResult.Yes) return;

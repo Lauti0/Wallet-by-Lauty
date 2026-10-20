@@ -34,8 +34,8 @@ public partial class MainViewModel
             Raise(nameof(MonthTitle));
         }
         ClearTransactionForm(); // recarga todo
-        MessageBox.Show($"Listo, se importaron {viewModel.ImportedCount:N0} movimientos.", "Importar",
-            MessageBoxButton.OK, MessageBoxImage.Information);
+        MessageBox.Show(viewModel.ImportedCount == 1 ? "Listo, se importó 1 movimiento." : $"Listo, se importaron {viewModel.ImportedCount:N0} movimientos.",
+            "Importar", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     // Pide dónde guardar, escribe el archivo y ofrece abrirlo. Los errores comunes se explican en criollo.

@@ -10,6 +10,9 @@ namespace CholinanzasApp.ViewModels;
 public record RuleRow(int Id, string Pattern, string Category, string Type);
 public record CategoryChoice(int Id, string Label);
 
+/// <summary>Lo que se le muestra al usuario cuando la app ofrece crear una regla a partir de una corrección.</summary>
+public record RuleOffer(string Description, string CategoryName, string SuggestedPattern, string? Note);
+
 public partial class MainViewModel
 {
     private const int ApplyBatchSize = 500;
@@ -98,11 +101,67 @@ public partial class MainViewModel
             .Select(x => (x.Transaction.Id, x.Rule!.CategoryId))
             .ToList();
 
-        RulesApplyInfo = _applicable.Count == 0
-            ? "No hay movimientos en «Otros gastos» u «Otros ingresos» que tus reglas puedan recategorizar."
-            : $"Hay {_applicable.Count:N0} movimientos en «Otros gastos» u «Otros ingresos» que tus reglas pueden recategorizar.";
+        RulesApplyInfo = _applicable.Count switch
+        {
+            0 => "No hay movimientos en «Otros gastos» u «Otros ingresos» que tus reglas puedan recategorizar.",
+            1 => "Hay 1 movimiento en «Otros gastos» u «Otros ingresos» que tus reglas pueden recategorizar.",
+            _ => $"Hay {_applicable.Count:N0} movimientos en «Otros gastos» u «Otros ingresos» que tus reglas pueden recategorizar."
+        };
         Raise(nameof(CanApplyRules));
         Raise(nameof(TestResult));
+    }
+
+    // Cómo se le pregunta al usuario y cómo se le avisa. Son propiedades para poder reemplazarlas en las pruebas.
+    public Func<RuleOffer, string?> RuleOfferPrompt { get; set; } = AskWithDialog;
+    public Action<string> InfoNotifier { get; set; } = text =>
+        MessageBox.Show(text, "Reglas de categorías", MessageBoxButton.OK, MessageBoxImage.Information);
+
+    // Abre la ventana que propone el texto de la regla; devuelve el texto elegido o null si no quiso crearla.
+    private static string? AskWithDialog(RuleOffer offer)
+    {
+        var window = new RulePromptWindow(offer) { Owner = Application.Current?.MainWindow };
+        return window.ShowDialog() == true ? window.Pattern : null;
+    }
+
+    // Se llama cuando el usuario corrigió una categoría: ofrece que la app lo recuerde para la próxima vez.
+    private void OfferRule(string description, TransactionType type, Category category, RuleEntry? ruleBefore)
+    {
+        // si una regla ya manda esta descripción a esa categoría, no hay nada que enseñar
+        var current = CategoryRuleService.FindMatch(description, type, _rules);
+        if (current is not null && current.CategoryId == category.Id) return;
+
+        var suggestion = CategoryRuleService.SuggestPattern(description, (current ?? ruleBefore)?.Pattern);
+        if (suggestion is null) return; // no hay una palabra que identifique al comercio
+
+        string? note = null;
+        if (current is not null)
+        {
+            var target = _allCategories.FirstOrDefault(c => c.Id == current.CategoryId)?.Name ?? "otra categoría";
+            note = $"Hoy la regla «{current.Pattern}» manda esto a «{target}». La nueva solo se aplicará a descripciones que contengan el texto de abajo.";
+        }
+
+        var pattern = RuleOfferPrompt(new RuleOffer(description, category.Name, suggestion, note));
+        if (pattern is null) return;
+
+        RuleSaveResult result;
+        using (var db = new AppDbContext())
+            result = CategoryRuleService.Save(db, pattern, category.Id);
+
+        if (result is RuleSaveResult.TooShort or RuleSaveResult.LimitReached)
+        {
+            InfoNotifier(result == RuleSaveResult.TooShort
+                ? $"El texto de la regla es muy corto (mínimo {CategoryRuleService.MinPatternLength} letras). No se creó."
+                : $"Llegaste al máximo de {CategoryRuleService.MaxRules} reglas. Borrá alguna en la pestaña Reglas.");
+            return;
+        }
+
+        Reload(); // actualiza las reglas y cuántos movimientos se pueden recategorizar
+        var message = $"Listo: desde ahora, lo que contenga «{pattern.Trim()}» va a «{category.Name}».";
+        if (_applicable.Count == 1)
+            message += "\n\nHay 1 movimiento en «Otros» que tus reglas pueden recategorizar: lo hacés desde la pestaña Reglas.";
+        else if (_applicable.Count > 1)
+            message += $"\n\nHay {_applicable.Count:N0} movimientos en «Otros» que tus reglas pueden recategorizar: lo hacés desde la pestaña Reglas.";
+        InfoNotifier(message);
     }
 
     private void AddRule()
@@ -121,20 +180,12 @@ public partial class MainViewModel
 
         using (var db = new AppDbContext())
         {
-            if (db.CategoryRules.Count() >= CategoryRuleService.MaxRules)
+            // un mismo texto no puede ir a dos categorías: si ya existe, se actualiza
+            if (CategoryRuleService.Save(db, pattern, NewRuleCategory.Id) == RuleSaveResult.LimitReached)
             {
                 MessageBox.Show($"Llegaste al máximo de {CategoryRuleService.MaxRules} reglas. Borrá alguna para agregar otra.", "Regla");
                 return;
             }
-
-            // un mismo texto no puede ir a dos categorías: si ya existe, se actualiza
-            var normalized = CsvImportService.Normalize(pattern);
-            var existing = db.CategoryRules.ToList().FirstOrDefault(r => CsvImportService.Normalize(r.Pattern) == normalized);
-            if (existing is null)
-                db.CategoryRules.Add(new CategoryRule { Pattern = pattern, CategoryId = NewRuleCategory.Id });
-            else
-                existing.CategoryId = NewRuleCategory.Id;
-            db.SaveChanges();
         }
 
         NewRulePattern = "";
@@ -158,15 +209,17 @@ public partial class MainViewModel
         if (_applicable.Count == 0) return;
 
         var answer = MessageBox.Show(
-            $"Se van a cambiar de categoría {_applicable.Count:N0} movimientos que hoy están en «Otros».\n\n" +
+            (_applicable.Count == 1
+                ? "Se va a cambiar de categoría 1 movimiento que hoy está en «Otros».\n\n"
+                : $"Se van a cambiar de categoría {_applicable.Count:N0} movimientos que hoy están en «Otros».\n\n") +
             "Antes se hace un respaldo automático de tus datos, por si querés volver atrás.\n\n¿Continuar?",
             "Aplicar reglas", MessageBoxButton.YesNo, MessageBoxImage.Question);
         if (answer != MessageBoxResult.Yes) return;
 
         var changed = RunApplyRules();
         if (changed > 0)
-            MessageBox.Show($"Listo, se recategorizaron {changed:N0} movimientos.", "Aplicar reglas",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(changed == 1 ? "Listo, se recategorizó 1 movimiento." : $"Listo, se recategorizaron {changed:N0} movimientos.",
+                "Aplicar reglas", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     // Hace el cambio (con respaldo previo) y devuelve cuántos movimientos cambió; 0 si no se pudo.
