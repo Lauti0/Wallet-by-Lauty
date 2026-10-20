@@ -12,8 +12,8 @@ namespace CholinanzasApp.ViewModels;
 
 public record ColumnOption(int Index, string Label);
 public record Choice<T>(T Value, string Label);
-public record ImportPreviewRow(int Line, string DateText, string Description, string AmountText, string TypeText,
-    string StatusText, ImportStatus Status);
+public record ImportPreviewRow(int Line, string DateText, string Description, string CategoryText, string AmountText,
+    string TypeText, string StatusText, ImportStatus Status);
 
 /// <summary>
 /// Lógica del asistente de importación: lee el archivo, propone la configuración y muestra una vista previa.
@@ -24,6 +24,11 @@ public class ImportViewModel : ViewModelBase
     private const int PreviewLimit = 300;
     private const int MaxDescriptionLength = 200;
     private static readonly ColumnOption None = new(-1, "(ninguna)");
+
+    // para decidir la categoría de cada fila (archivo → regla → por defecto)
+    private readonly List<Category> _categories;
+    private readonly List<RuleEntry> _rules;
+    private readonly Dictionary<(TransactionType Type, string Name), Category> _byName;
 
     private string _text = "";
     private string _encoding = "";
@@ -57,6 +62,10 @@ public class ImportViewModel : ViewModelBase
             var categories = db.Categories.AsNoTracking().OrderBy(c => c.Name).ToList();
             ExpenseCategories = categories.Where(c => c.Type == TransactionType.Gasto).ToList();
             IncomeCategories = categories.Where(c => c.Type == TransactionType.Ingreso).ToList();
+
+            _categories = categories;
+            _rules = CategoryRuleService.Load(db);
+            _byName = categories.GroupBy(c => (c.Type, CsvImportService.Normalize(c.Name))).ToDictionary(g => g.Key, g => g.First());
         }
 
         _account = Accounts.FirstOrDefault();
@@ -346,10 +355,12 @@ public class ImportViewModel : ViewModelBase
         foreach (var r in _rows.Take(PreviewLimit))
         {
             var failed = r.Status == ImportStatus.Error;
+            var (category, source) = failed ? (null, "") : Resolve(r);
             Preview.Add(new ImportPreviewRow(
                 r.Line,
                 r.Date?.ToString("dd/MM/yyyy") ?? "—",
                 r.Description,
+                category is null ? "—" : source == "por defecto" ? $"{category.Name} (por defecto)" : category.Name,
                 failed ? "—" : Money.Format(r.Type == TransactionType.Gasto ? -r.Amount : r.Amount, currency),
                 failed ? "—" : r.Type.ToString(),
                 r.Status switch { ImportStatus.New => "Nuevo", ImportStatus.Duplicate => "Ya existe", _ => r.Error ?? "Error" },
@@ -366,6 +377,20 @@ public class ImportViewModel : ViewModelBase
         Summary = string.Join("  ·  ", parts);
 
         UpdateImportState();
+    }
+
+    // De dónde sale la categoría de una fila: la que trae el archivo, una regla, o la elegida por defecto.
+    private (Category? Category, string Source) Resolve(ImportRow r)
+    {
+        if (r.CategoryName is not null
+            && _byName.TryGetValue((r.Type, CsvImportService.Normalize(r.CategoryName)), out var fromFile))
+            return (fromFile, "archivo");
+
+        var rule = CategoryRuleService.FindMatch(r.Description, r.Type, _rules);
+        var fromRule = rule is null ? null : _categories.FirstOrDefault(c => c.Id == rule.CategoryId);
+        if (fromRule is not null) return (fromRule, "regla");
+
+        return (r.Type == TransactionType.Gasto ? DefaultExpenseCategory : DefaultIncomeCategory, "por defecto");
     }
 
     private List<ImportRow> ToImport() => _rows
@@ -416,19 +441,6 @@ public class ImportViewModel : ViewModelBase
         try
         {
             using var db = new AppDbContext();
-            var categories = db.Categories.AsNoTracking().ToList();
-
-            int CategoryFor(ImportRow r)
-            {
-                if (r.CategoryName is not null)
-                {
-                    var wanted = CsvImportService.Normalize(r.CategoryName);
-                    var match = categories.FirstOrDefault(c => c.Type == r.Type && CsvImportService.Normalize(c.Name) == wanted);
-                    if (match is not null) return match.Id;
-                }
-                return (r.Type == TransactionType.Gasto ? DefaultExpenseCategory : DefaultIncomeCategory)?.Id
-                       ?? categories.First(c => c.Type == r.Type).Id;
-            }
 
             foreach (var r in chosen)
             {
@@ -440,7 +452,7 @@ public class ImportViewModel : ViewModelBase
                     Type = r.Type,
                     Description = description,
                     AccountId = SelectedAccount.Id,
-                    CategoryId = CategoryFor(r)
+                    CategoryId = (Resolve(r).Category ?? _categories.First(c => c.Type == r.Type)).Id
                 });
             }
             db.SaveChanges(); // todo o nada: una sola operación

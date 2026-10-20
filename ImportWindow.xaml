@@ -190,17 +190,17 @@
                         <DataGrid Style="{StaticResource TableGrid}" ItemsSource="{Binding Preview}" Height="320"
                                   AutomationProperties.Name="Vista previa de los movimientos a importar">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Fila" Binding="{Binding Line}" Width="64"
+                                <DataGridTextColumn Header="Fila" Binding="{Binding Line}" Width="56"
                                                     ElementStyle="{StaticResource CellText}"/>
-                                <DataGridTextColumn Header="Fecha" Binding="{Binding DateText}" Width="100"
+                                <DataGridTextColumn Header="Fecha" Binding="{Binding DateText}" Width="95"
                                                     ElementStyle="{StaticResource CellText}"/>
                                 <DataGridTextColumn Header="Descripción" Binding="{Binding Description}" Width="*" MinWidth="140"
                                                     ElementStyle="{StaticResource CellText}"/>
-                                <DataGridTextColumn Header="Monto" Binding="{Binding AmountText}" Width="150"
-                                                    ElementStyle="{StaticResource CellRight}"/>
-                                <DataGridTextColumn Header="Tipo" Binding="{Binding TypeText}" Width="80"
+                                <DataGridTextColumn Header="Categoría" Binding="{Binding CategoryText}" Width="200"
                                                     ElementStyle="{StaticResource CellText}"/>
-                                <DataGridTextColumn Header="Estado" Binding="{Binding StatusText}" Width="210"
+                                <DataGridTextColumn Header="Monto" Binding="{Binding AmountText}" Width="140"
+                                                    ElementStyle="{StaticResource CellRight}"/>
+                                <DataGridTextColumn Header="Estado" Binding="{Binding StatusText}" Width="170"
                                                     ElementStyle="{StaticResource StatusCell}"/>
                             </DataGrid.Columns>
                         </DataGrid>

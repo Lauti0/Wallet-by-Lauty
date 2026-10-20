@@ -1,5 +1,6 @@
 using System.IO;
 using CholinanzasApp.Models;
+using CholinanzasApp.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace CholinanzasApp.Data;
@@ -10,6 +11,7 @@ public class AppDbContext : DbContext
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<FinanceTransaction> Transactions => Set<FinanceTransaction>();
     public DbSet<RecurringTransaction> Recurrings => Set<RecurringTransaction>();
+    public DbSet<CategoryRule> CategoryRules => Set<CategoryRule>();
     public DbSet<Transfer> Transfers => Set<Transfer>();
     public DbSet<ExchangeRate> Rates => Set<ExchangeRate>();
     public DbSet<Budget> Budgets => Set<Budget>();
@@ -88,6 +90,15 @@ public class AppDbContext : DbContext
             );
             """);
 
+        db.Database.ExecuteSqlRaw("""
+            CREATE TABLE IF NOT EXISTS "CategoryRules" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_CategoryRules" PRIMARY KEY AUTOINCREMENT,
+                "Pattern" TEXT NOT NULL,
+                "CategoryId" INTEGER NOT NULL,
+                CONSTRAINT "FK_CategoryRules_Categories_CategoryId" FOREIGN KEY ("CategoryId") REFERENCES "Categories" ("Id") ON DELETE CASCADE
+            );
+            """);
+
         var hasColumn = db.Database
             .SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM pragma_table_info('Transactions') WHERE name = 'RecurringId'")
             .AsEnumerable().First() > 0;
@@ -101,7 +112,11 @@ public class AppDbContext : DbContext
         db.Database.EnsureCreated();
         UpgradeExistingDatabase(db);
 
-        if (db.Categories.Any()) return;
+        if (db.Categories.Any())
+        {
+            CategoryRuleService.SeedDefaultsOnce(db);
+            return;
+        }
 
         string[] gastos =
         [
@@ -114,5 +129,7 @@ public class AppDbContext : DbContext
         db.Categories.AddRange(ingresos.Select(n => new Category { Name = n, Type = TransactionType.Ingreso }));
         db.Accounts.Add(new Account { Name = "Efectivo", Currency = Currency.ARS });
         db.SaveChanges();
+
+        CategoryRuleService.SeedDefaultsOnce(db);
     }
 }

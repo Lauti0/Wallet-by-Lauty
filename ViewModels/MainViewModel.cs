@@ -118,7 +118,15 @@ public partial class MainViewModel : ViewModelBase
 
     public DateTime NewDate { get => _newDate; set => Set(ref _newDate, value); }
     public string NewAmount { get => _newAmount; set => Set(ref _newAmount, value); }
-    public string NewDescription { get => _newDescription; set => Set(ref _newDescription, value); }
+    public string NewDescription
+    {
+        get => _newDescription;
+        set
+        {
+            Set(ref _newDescription, value);
+            SuggestCategory();
+        }
+    }
     public AccountRow? NewAccount { get => _newAccount; set => Set(ref _newAccount, value); }
     public Category? NewCategory { get => _newCategory; set => Set(ref _newCategory, value); }
 
@@ -277,6 +285,7 @@ public partial class MainViewModel : ViewModelBase
         ReloadTransfers(db, transfers, transferFromId, transferToId);
         ReloadOverview(accounts, all, transfers);
         ReloadBudgetAlerts(db, all);
+        ReloadRules(db, all);
     }
 
     // Recurrentes sin registrar desde el mes actual hasta el mes visible, y proyección de saldo.

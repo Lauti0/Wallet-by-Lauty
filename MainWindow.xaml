@@ -625,6 +625,93 @@
             </Grid>
         </TabItem>
 
+        <!-- ═══════════════ REGLAS DE CATEGORÍAS ═══════════════ -->
+        <TabItem Header="🏷  Reglas" Tag="Reglas de categorías">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="32,0,16,24">
+
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="Nueva regla" Margin="0,0,0,4"/>
+                            <TextBlock Style="{StaticResource Hint}" Margin="0,0,0,12"
+                                       Text="Si la descripción de un movimiento contiene el texto, se le pone esa categoría. No importan las mayúsculas ni los acentos."/>
+                            <WrapPanel>
+                                <StackPanel Style="{StaticResource Field}">
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="Si la descripción contiene"/>
+                                    <TextBox Width="250" MaxLength="60" Text="{Binding NewRulePattern, UpdateSourceTrigger=PropertyChanged}"
+                                             ToolTip="Ej: carrefour, netflix, farmacia"/>
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Field}">
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="Usar la categoría"/>
+                                    <ComboBox Width="270" ItemsSource="{Binding RuleCategories}" DisplayMemberPath="Label"
+                                              SelectedItem="{Binding NewRuleCategory}"/>
+                                </StackPanel>
+                                <Button Content="＋ Agregar regla" Style="{StaticResource PrimaryButton}" VerticalAlignment="Bottom"
+                                        Margin="0,0,0,12" Command="{Binding AddRuleCommand}"/>
+                            </WrapPanel>
+                            <TextBlock Style="{StaticResource Hint}"
+                                       Text="Si varias reglas coinciden, gana la más específica (la de texto más largo). Si agregás un texto que ya tiene regla, se actualiza su categoría."/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="Probar una descripción" Margin="0,0,0,12"/>
+                            <StackPanel Style="{StaticResource Field}">
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="Escribí una descripción de ejemplo"/>
+                                <TextBox Width="380" HorizontalAlignment="Left" MaxLength="200"
+                                         Text="{Binding TestDescription, UpdateSourceTrigger=PropertyChanged}"
+                                         ToolTip="Ej: COMPRA CARREFOUR 4521"/>
+                            </StackPanel>
+                            <TextBlock FontWeight="SemiBold" TextWrapping="Wrap" Text="{Binding TestResult}"
+                                       AutomationProperties.LiveSetting="Polite"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="Aplicar a lo que ya cargaste" Margin="0,0,0,8"/>
+                            <TextBlock TextWrapping="Wrap" Text="{Binding RulesApplyInfo}"/>
+                            <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,12"
+                                       Text="Solo se tocan los movimientos que están en «Otros gastos» u «Otros ingresos»: las categorías que elegiste a mano no se cambian. Antes se hace un respaldo."/>
+                            <Button Content="Recategorizar ahora" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left"
+                                    IsEnabled="{Binding CanApplyRules}" Command="{Binding ApplyRulesCommand}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="Mis reglas" Margin="0,0,0,8"/>
+                            <DataGrid Style="{StaticResource TableGrid}" ItemsSource="{Binding RuleRows}" MaxHeight="420"
+                                      AutomationProperties.Name="Reglas de categorías">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Si la descripción contiene" Binding="{Binding Pattern}" Width="*" MinWidth="160"
+                                                        ElementStyle="{StaticResource CellText}"/>
+                                    <DataGridTextColumn Header="Categoría" Binding="{Binding Category}" Width="220"
+                                                        ElementStyle="{StaticResource CellText}"/>
+                                    <DataGridTextColumn Header="Tipo" Binding="{Binding Type}" Width="90"
+                                                        ElementStyle="{StaticResource CellText}"/>
+                                    <DataGridTemplateColumn Width="50">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="✕" ToolTip="Eliminar" AutomationProperties.Name="Eliminar"
+                                                        Style="{StaticResource RowButton}"
+                                                        Command="{Binding DataContext.DeleteRuleCommand,
+                                                                  RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <TextBlock Style="{StaticResource EmptyState}" Tag="{Binding RuleRows.Count}"
+                                       Text="Todavía no hay reglas. Agregá la primera arriba, por ejemplo «carrefour» → Supermercado."/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+
         <!-- ═══════════════ TRANSFERENCIAS ═══════════════ -->
         <TabItem Header="🔁  Transferencias" Tag="Transferencias">
             <Grid Margin="32,0,32,24">

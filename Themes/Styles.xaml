@@ -294,6 +294,10 @@
                                                          Value="Cuentas y datos">
                                                 <Setter Property="Visibility" Value="Collapsed"/>
                                             </DataTrigger>
+                                            <DataTrigger Binding="{Binding SelectedItem.Tag, RelativeSource={RelativeSource AncestorType=TabControl}}"
+                                                         Value="Reglas de categorías">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
                                 </StackPanel.Style>

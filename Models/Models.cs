@@ -19,6 +19,16 @@ public class Category
     public TransactionType Type { get; set; }
 }
 
+/// <summary>Si la descripción de un movimiento contiene Pattern, se le asigna esa categoría.</summary>
+public class CategoryRule
+{
+    public int Id { get; set; }
+    public string Pattern { get; set; } = "";
+
+    public int CategoryId { get; set; }
+    public Category Category { get; set; } = null!;
+}
+
 public class FinanceTransaction
 {
     public int Id { get; set; }
