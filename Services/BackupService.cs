@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text.RegularExpressions;
 using CholinanzasApp.Data;
 using Microsoft.Data.Sqlite;
 
@@ -14,6 +15,7 @@ public static class BackupService
 {
     public const int KeepCount = 30;
     private const string Pattern = "finanzas-*.db";
+    private static readonly Regex OwnName = new(@"^finanzas-\d{8}-\d{6}\.db$", RegexOptions.CultureInvariant);
 
     private static string DataDir => Path.GetDirectoryName(AppDbContext.DbPath)!;
     public static string BackupDir => Path.Combine(DataDir, "Backups");
@@ -85,10 +87,17 @@ public static class BackupService
     public static List<BackupInfo> List() =>
         !Directory.Exists(BackupDir)
             ? []
-            : new DirectoryInfo(BackupDir).GetFiles(Pattern)
-                .OrderByDescending(f => f.LastWriteTime)
+            : OwnBackups(BackupDir)
                 .Select(f => new BackupInfo(f.FullName, f.LastWriteTime, f.Length))
                 .ToList();
+
+    // Solo los archivos con el nombre exacto que genera la app (finanzas-AAAAMMDD-HHMMSS.db), del más nuevo al más viejo.
+    // Con un patrón más amplio, listar o limpiar una carpeta elegida por el usuario podía tocar archivos suyos
+    // que se llamaran, por ejemplo, "finanzas-familia.db".
+    private static IEnumerable<FileInfo> OwnBackups(string folder) =>
+        new DirectoryInfo(folder).GetFiles(Pattern)
+            .Where(f => OwnName.IsMatch(f.Name))
+            .OrderByDescending(f => f.LastWriteTime);
 
     private static BackupInfo Describe(string path)
     {
@@ -101,8 +110,7 @@ public static class BackupService
     {
         try
         {
-            foreach (var old in new DirectoryInfo(folder).GetFiles(Pattern)
-                         .OrderByDescending(f => f.LastWriteTime).Skip(KeepCount))
+            foreach (var old in OwnBackups(folder).Skip(KeepCount))
                 old.Delete();
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -129,11 +137,19 @@ public static class BackupService
 
     // ───────────── SQLite ─────────────
 
+    private static string ConnectionString(string path, bool readOnly = false) => new SqliteConnectionStringBuilder
+    {
+        DataSource = path,
+        Pooling = false,
+        Mode = readOnly ? SqliteOpenMode.ReadOnly : SqliteOpenMode.ReadWriteCreate
+    }.ToString();
+
     private static void CopyDatabase(string from, string to)
     {
-        // Pooling=False para que el archivo no quede bloqueado cuando terminamos
-        using var source = new SqliteConnection($"Data Source={from};Pooling=False");
-        using var destination = new SqliteConnection($"Data Source={to};Pooling=False");
+        // Pooling=False para que el archivo no quede bloqueado cuando terminamos.
+        // La ruta se arma con el "builder" y no pegada en el texto: una ruta con ";" o "=" no puede alterar la conexión.
+        using var source = new SqliteConnection(ConnectionString(from));
+        using var destination = new SqliteConnection(ConnectionString(to));
         source.Open();
         destination.Open();
         source.BackupDatabase(destination);
@@ -142,7 +158,7 @@ public static class BackupService
     private static void VerifyDatabase(string path)
     {
         string? result;
-        using (var connection = new SqliteConnection($"Data Source={path};Mode=ReadOnly;Pooling=False"))
+        using (var connection = new SqliteConnection(ConnectionString(path, readOnly: true)))
         {
             connection.Open();
             using var command = connection.CreateCommand();

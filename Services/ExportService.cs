@@ -253,10 +253,11 @@ public static class ExportService
         File.WriteAllText(path, sb.ToString(), new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
     }
 
-    // Escapa para CSV y evita que Excel interprete texto como fórmula (=, +, -, @ al inicio).
+    // Escapa para CSV y evita que Excel interprete texto como fórmula (=, +, -, @, tabulación o salto de línea al inicio,
+    // la lista de OWASP contra la "inyección de fórmulas").
     private static string Text(string value)
     {
-        if (value.Length > 0 && value[0] is '=' or '+' or '-' or '@')
+        if (value.Length > 0 && value[0] is '=' or '+' or '-' or '@' or '\t' or '\r')
             value = "'" + value;
         return value.IndexOfAny([';', '"', '\n', '\r']) >= 0
             ? "\"" + value.Replace("\"", "\"\"") + "\""

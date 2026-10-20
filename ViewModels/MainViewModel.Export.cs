@@ -69,6 +69,15 @@ public partial class MainViewModel
             return;
         }
 
+        // Solo se ofrece abrirlo si quedó con la extensión esperada (.xlsx o .csv). Si el usuario le puso otra, por ejemplo
+        // ".bat", abrirlo con el shell de Windows lo ejecutaría: el contenido (descripciones que pueden venir de un
+        // archivo importado) no debe interpretarse nunca como comandos.
+        if (!string.Equals(Path.GetExtension(dialog.FileName), extension, StringComparison.OrdinalIgnoreCase))
+        {
+            MessageBox.Show($"Listo, se guardó en:\n{dialog.FileName}", "Exportar", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
         if (MessageBox.Show($"Listo, se guardó en:\n{dialog.FileName}\n\n¿Querés abrirlo ahora?", "Exportar",
                 MessageBoxButton.YesNo, MessageBoxImage.Information) == MessageBoxResult.Yes)
             Process.Start(new ProcessStartInfo(dialog.FileName) { UseShellExecute = true });

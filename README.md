@@ -83,7 +83,21 @@ Es una app local sin servidor ni puertos abiertos, por lo que los ataques de den
 - Una sola ventana por base de datos (evita bloqueos del archivo SQLite).
 - Tope en montos (hasta 1.000.000.000.000) y en la longitud de textos; límite de tamaño del registro de errores; rotación de respaldos.
 - Errores inesperados: aviso al usuario y registro, en vez de cierre brusco.
-- Exportación a CSV con protección contra inyección de fórmulas en Excel.
+- Exportación a CSV con protección contra inyección de fórmulas en Excel (texto que empieza con `=`, `+`, `-`, `@`, tabulación o salto de línea). La exportación a Excel nunca crea fórmulas.
+- Al exportar, «¿Querés abrirlo ahora?» solo se ofrece si el archivo quedó con la extensión esperada (`.xlsx` o `.csv`): así nunca se ejecuta un archivo que el usuario haya nombrado, por ejemplo, `.bat`.
+- Los respaldos se reconocen y se limpian solo por su nombre exacto (`finanzas-AAAAMMDD-HHMMSS.db`): elegir como carpeta extra una que ya tenga archivos propios no los toca.
+- Las rutas de la base y de los respaldos se pasan a SQLite por el «builder» de cadenas de conexión, no pegadas en el texto.
+- La cotización del dólar se pide solo por HTTPS, con tope de 10 segundos y de 1 MB; no se sigue ninguna redirección a HTTP, y el valor recibido se valida antes de usarlo.
+- `installer\build.ps1` verifica la huella SHA-256 del compilador del instalador antes de usarlo.
+- Dependencias sin vulnerabilidades conocidas (`dotnet list package --vulnerable --include-transitive`, revisado al 20/10/2026).
+
+### Lo que no cubre (a tener en cuenta)
+
+- **La base de datos y los respaldos no están cifrados.** Quien tenga acceso a tu usuario de Windows (o a la carpeta extra, por ejemplo una nube) puede leerlos. Si más adelante hace falta, se puede agregar cifrado (por ejemplo SQLCipher).
+- **La app va con .NET incluido** (autocontenida): las correcciones de seguridad de .NET no llegan solas. Hay que volver a generar el instalador cuando Microsoft publique una (revisar `dotnet list package --vulnerable` y las novedades del SDK).
+- **El instalador no está firmado**: Windows muestra el aviso de SmartScreen y no se puede verificar quién lo publicó.
+- Las variables de entorno `CHOLINANZAS_DB` y `CHOLINANZAS_RATE_URL` existen para pruebas (la segunda solo acepta direcciones de esta misma computadora). Las puede definir cualquier proceso del mismo usuario; no escalan privilegios, pero conviene saberlo.
+- No se probó contra archivos Excel armados para atacar al lector (por ejemplo entidades XML anidadas); se confía en que la librería las rechaza por defecto.
 - Importación de CSV y Excel con topes (archivo de hasta 10 MB, 50.000 filas, 50 columnas, textos recortados; un `.xlsx` que declara más de 100 MB descomprimido se rechaza), sin ejecutar nada del archivo (ni macros ni fórmulas) y todo o nada al guardar.
 - Copia de la base con la API nativa de SQLite y verificación de integridad antes de restaurar.
 

@@ -1,6 +1,7 @@
 using System.IO;
 using CholinanzasApp.Models;
 using CholinanzasApp.Services;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
 namespace CholinanzasApp.Data;
@@ -27,7 +28,8 @@ public class AppDbContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(DbPath)!);
-        options.UseSqlite($"Data Source={DbPath}");
+        // la ruta va por el "builder": una ruta con ";" o "=" no puede alterar la cadena de conexión
+        options.UseSqlite(new SqliteConnectionStringBuilder { DataSource = DbPath }.ToString());
     }
 
     // EnsureCreated no altera una base que ya existe: agrega a mano lo que se sumó después.

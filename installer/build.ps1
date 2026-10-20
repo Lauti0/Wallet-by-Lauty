@@ -34,6 +34,16 @@ function Find-Iscc {
     # un .nupkg es un zip, pero Expand-Archive solo acepta la extensión .zip
     $pkg = Join-Path $cache 'inno.zip'
     Invoke-WebRequest 'https://api.nuget.org/v3-flatcontainer/tools.innosetup/6.4.3/tools.innosetup.6.4.3.nupkg' -OutFile $pkg
+
+    # El compilador es un ejecutable que se baja de internet y arma el instalador: se verifica que sea exactamente el paquete
+    # esperado. Esta huella coincide con el SHA-512 que publica NuGet para tools.innosetup 6.4.3. Al cambiar de versión,
+    # hay que actualizar la URL y esta huella juntas.
+    $expectedSha256 = '9D67A2B1155CA5BC825475CEB907AA357C5FEB42E474CFD5347EDDEEF5AD92A5'
+    $actualSha256 = (Get-FileHash $pkg -Algorithm SHA256).Hash
+    if ($actualSha256 -ne $expectedSha256) {
+        Remove-Item $pkg -Force
+        throw "El paquete de Inno Setup descargado no es el esperado (SHA-256 $actualSha256). No se usa."
+    }
     Expand-Archive $pkg -DestinationPath (Join-Path $cache 'pkg') -Force
     return (Join-Path $cache 'pkg\tools\ISCC.exe')
 }
