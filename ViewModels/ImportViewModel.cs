@@ -22,7 +22,6 @@ public record ImportPreviewRow(int Line, string DateText, string Description, st
 public class ImportViewModel : ViewModelBase
 {
     private const int PreviewLimit = 300;
-    private const int MaxDescriptionLength = 200;
     private static readonly ColumnOption None = new(-1, "(ninguna)");
 
     // para decidir la categoría de cada fila (archivo → regla → por defecto)
@@ -445,13 +444,12 @@ public class ImportViewModel : ViewModelBase
 
             foreach (var r in chosen)
             {
-                var description = r.Description.Length > MaxDescriptionLength ? r.Description[..MaxDescriptionLength] : r.Description;
                 db.Transactions.Add(new FinanceTransaction
                 {
                     Date = r.Date!.Value,
                     Amount = r.Amount,
                     Type = r.Type,
-                    Description = description,
+                    Description = r.Description, // ya viene recortada por CsvImportService.Evaluate
                     AccountId = SelectedAccount.Id,
                     CategoryId = (Resolve(r).Category ?? _categories.First(c => c.Type == r.Type)).Id
                 });

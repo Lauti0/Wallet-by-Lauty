@@ -44,6 +44,10 @@ public static class CsvImportService
     public const int MaxRows = 50_000;
     public const int MaxColumns = 50;
     public const int MaxFieldLength = 500;
+
+    /// <summary>Largo máximo de la descripción de un movimiento. Se recorta al leer cada fila, antes de comparar con lo
+    /// que ya existe: así un movimiento importado con una descripción larga se reconoce como repetido al re-importar.</summary>
+    public const int MaxDescriptionLength = 200;
     public const decimal MaxAmount = 1_000_000_000_000m;
 
     private static readonly char[] Delimiters = [';', ',', '\t', '|'];
@@ -437,6 +441,7 @@ public static class CsvImportService
             var type = signed < 0 ? TransactionType.Gasto : TransactionType.Ingreso;
             var amount = Math.Abs(signed);
             if (description.Length == 0) description = "Importado";
+            if (description.Length > MaxDescriptionLength) description = description[..MaxDescriptionLength];
 
             var key = new DuplicateKey(date, type, amount, Normalize(description));
             var status = ImportStatus.New;
