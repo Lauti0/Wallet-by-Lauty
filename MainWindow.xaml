@@ -1456,5 +1456,126 @@
                 </StackPanel>
             </ScrollViewer>
         </TabItem>
+
+        <!-- ───────────── Ayuda ───────────── -->
+        <TabItem Header="❓  Ayuda" Tag="Ayuda">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="32,0,16,24" MaxWidth="860" HorizontalAlignment="Left">
+
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="Primeros pasos" Margin="0,0,0,10"
+                                       AutomationProperties.HeadingLevel="Level2"/>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="1. Creá tus cuentas. "/>
+                                <Run Text="En la pestaña Cuentas, agregá una por cada lugar donde tenés plata: efectivo, un banco, una billetera virtual, dólares. En «Saldo inicial» poné lo que tenés hoy en cada una."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="2. Cargá la cotización del dólar "/>
+                                <Run Text="si tenés cuentas en dólares. En Cuentas, tarjeta «Cotización del dólar»: la escribís vos o la traés de internet. Sirve para ver tu plata total en pesos y en dólares."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="3. Cargá tus movimientos. "/>
+                                <Run Text="En Movimientos anotá cada ingreso y cada gasto. Si tu banco te deja bajar el extracto en CSV, usá «Importar desde CSV…» en esa misma pestaña y te ahorrás tipear."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="4. Anotá lo que se repite todos los meses "/>
+                                <Run Text="(alquiler, sueldo, suscripciones) en Recurrentes. Con eso la app calcula cuánta plata vas a tener a fin de mes."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="5. Poné límites y metas. "/>
+                                <Run Text="En Presupuestos definís cuánto querés gastar como máximo por categoría; en Metas, cuánto querés juntar y para cuándo."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource HelpBody}" Margin="0">
+                                <Run FontWeight="SemiBold" Text="6. Cuidá tus datos. "/>
+                                <Run Text="La app hace un respaldo por día sola. Además, en Cuentas podés elegir una carpeta extra (por ejemplo de OneDrive) para que cada respaldo se copie también ahí."/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="¿Dónde veo…?" Margin="0,0,0,10"
+                                       AutomationProperties.HeadingLevel="Level2"/>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="…cuánta plata tengo hoy y cuánta voy a tener. "/>
+                                <Run Text="En General: «Tu plata hoy» y lo proyectado a fin de mes. En «Este mes», sección «Hacia fin de mes», lo ves por moneda."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="…cuánto puedo gastar por día. "/>
+                                <Run Text="En «Este mes»: «Podés gastar por día» es lo que vas a tener a fin de mes dividido los días que quedan (contando hoy). Solo existe para el mes en curso."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="…en qué gasto la plata. "/>
+                                <Run Text="«Este mes» muestra tus gastos por categoría; en General, los gráficos muestran las categorías con más gasto de los últimos 6 meses."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="…cuánto tendría que ahorrar. "/>
+                                <Run Text="En Metas, «Necesitás ahorrar por mes» te dice cuánto separar para llegar a tus metas en la fecha elegida. «Te quedó» y «Ahorro» (en «Este mes» y en General) muestran cuánto ahorraste de verdad."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource HelpBody}" Margin="0">
+                                <Run FontWeight="SemiBold" Text="…otros meses. "/>
+                                <Run Text="Con el selector de mes de arriba cambiás de mes en las pestañas que dependen del mes. General siempre muestra toda tu historia."/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="Cosas que conviene saber" Margin="0,0,0,10"
+                                       AutomationProperties.HeadingLevel="Level2"/>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="Los recurrentes no se cargan solos. "/>
+                                <Run Text="Cuando el alquiler o el sueldo se concreten, entrá a Recurrentes y apretá «Registrar»: ahí se crea el movimiento real. Hasta entonces aparecen como «pendientes» en la proyección."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="Una transferencia no es un gasto ni un ingreso. "/>
+                                <Run Text="Pasar plata de una cuenta a otra (por ejemplo, del banco al efectivo, o de pesos a dólares) no cambia lo que gastaste ni lo que ganaste."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="Las categorías se sugieren solas. "/>
+                                <Run Text="Al escribir la descripción de un movimiento, la app propone una categoría según tus reglas. Si la corregís, te ofrece crear una regla para que la próxima vez acierte. Todas están en la pestaña Reglas."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="Pesos y dólares van separados. "/>
+                                <Run Text="No se mezclan en las cuentas ni en los resúmenes; solo se convierten para mostrar tu plata total, usando la última cotización cargada."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="Alertas de presupuesto. "/>
+                                <Run Text="Si te acercás al límite de una categoría o lo superás, aparece un aviso arriba de todas las pestañas."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource HelpBody}" Margin="0">
+                                <Run FontWeight="SemiBold" Text="Borrar es para siempre (casi). "/>
+                                <Run Text="Eliminar una cuenta borra también sus movimientos, y antes la app guarda un respaldo que podés restaurar. Eliminar un movimiento, una regla o una meta no genera respaldo."/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="Si algo sale mal" Margin="0,0,0,10"
+                                       AutomationProperties.HeadingLevel="Level2"/>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="Volver atrás. "/>
+                                <Run Text="En Cuentas, sección «Respaldos guardados», elegí un respaldo y apretá «Restaurar». Antes de restaurar, la app guarda una copia de lo que tenías."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="Si aparece un error inesperado, "/>
+                                <Run Text="la app sigue funcionando y deja los detalles en el archivo errores.log, en la carpeta de tus datos."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="Llevarte tus datos. "/>
+                                <Run Text="En Cuentas, «Exportar todo a Excel» o «Movimientos a CSV»."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,2" Text="Tus datos están en esta carpeta:"/>
+                            <TextBox Text="{Binding DataFolderText, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Padding="0"
+                                     Background="Transparent" Foreground="{DynamicResource TextMain}" FontSize="13"
+                                     AutomationProperties.Name="Carpeta donde se guardan tus datos"/>
+                            <TextBlock Style="{StaticResource Hint}" Margin="0,10,0,0" Text="{Binding AppVersionText}"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
     </TabControl>
 </Window>
