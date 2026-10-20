@@ -1571,7 +1571,9 @@
                             <TextBox Text="{Binding DataFolderText, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Padding="0"
                                      Background="Transparent" Foreground="{DynamicResource TextMain}" FontSize="13"
                                      AutomationProperties.Name="Carpeta donde se guardan tus datos"/>
-                            <TextBlock Style="{StaticResource Hint}" Margin="0,10,0,0" Text="{Binding AppVersionText}"/>
+                            <Button Content="Ver el recorrido de bienvenida" Style="{StaticResource ConfirmButton}"
+                                    HorizontalAlignment="Left" Margin="0,14,0,0" Command="{Binding ShowWelcomeCommand}"/>
+                            <TextBlock Style="{StaticResource Hint}" Margin="0,12,0,0" Text="{Binding AppVersionText}"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>

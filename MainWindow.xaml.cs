@@ -26,7 +26,39 @@ namespace CholinanzasApp
                 if (((TabControl)Content).SelectedContent is ScrollViewer page) page.ScrollToTop();
             };
 
-            Loaded += (_, _) => LabelFormFields(this);
+            viewModel.WelcomeRequested += () => ShowWelcome(viewModel);
+
+            Loaded += (_, _) =>
+            {
+                LabelFormFields(this);
+
+                // Loaded puede dispararse más de una vez: el recorrido inicial se revisa una sola vez
+                if (_welcomeChecked) return;
+                _welcomeChecked = true;
+                if (viewModel.ShouldShowWelcome()) ShowWelcome(viewModel);
+            };
+        }
+
+        private bool _welcomeChecked, _welcomeOpen;
+
+        // Cerrar el recorrido de cualquier forma cuenta como visto; los botones del último paso llevan a una pestaña.
+        private void ShowWelcome(MainViewModel viewModel)
+        {
+            if (_welcomeOpen) return;   // nunca dos recorridos a la vez (por ejemplo, doble clic en el botón de Ayuda)
+            _welcomeOpen = true;
+            try
+            {
+                var welcome = new WelcomeWindow { Owner = this };
+                welcome.ShowDialog();
+                viewModel.MarkWelcomeSeen();
+
+                if (welcome.Destination is { } tag && Content is TabControl tabs)
+                    tabs.SelectedItem = tabs.Items.OfType<TabItem>().FirstOrDefault(t => t.Tag as string == tag) ?? tabs.SelectedItem;
+            }
+            finally
+            {
+                _welcomeOpen = false;
+            }
         }
 
         // Los formularios ponen una etiqueta (TextBlock) arriba de cada campo. Acá se la asocia al campo

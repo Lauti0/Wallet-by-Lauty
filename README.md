@@ -15,6 +15,7 @@ App de escritorio para Windows que administra tus finanzas personales: cuánta p
 - **Exportar** todo a Excel (`.xlsx`, una hoja por tema) y los movimientos a CSV.
 - **Importar movimientos desde el CSV del banco**: un asistente detecta el formato (separador, codificación, fechas, números, columnas de débito y crédito) y muestra una vista previa antes de guardar. Omite los movimientos que ya existen, así que se puede importar el mismo extracto dos veces sin duplicar, y hace un respaldo antes de importar.
 - **Modo oscuro**: tema claro, oscuro o "según Windows" (sigue el cambio del sistema), que se elige en la pestaña Cuentas y se aplica al instante.
+- **Recorrido de bienvenida** de 3 pasos, solo la primera vez y solo a quien arranca de cero (quien ya tiene movimientos no lo ve). Se puede repetir desde la pestaña *Ayuda*.
 - **Ayuda** dentro de la app (pestaña *Ayuda*): primeros pasos, dónde ver cada dato, cosas que conviene saber y qué hacer si algo sale mal. Funciona sin internet.
 - **Editar** movimientos, transferencias, recurrentes, presupuestos, metas y cuentas ya cargados (botón *Editar* en cada fila: carga el elemento en el formulario). La moneda de una cuenta con movimientos no se puede cambiar.
 - **Reglas de categorías** ("si la descripción contiene *carrefour*, la categoría es Supermercado"): se aplican al importar, se sugieren al escribir un movimiento y pueden recategorizar lo que quedó en "Otros". Vienen unas reglas de ejemplo que se pueden cambiar o borrar. Cuando corregís la categoría de un movimiento, la app ofrece crear la regla para recordarlo (con el texto sugerido, que se puede editar).
@@ -91,6 +92,7 @@ Es una app local sin servidor ni puertos abiertos, por lo que los ataques de den
 App.xaml(.cs)          Arranque: instancia única, respaldo diario, manejo de errores
 MainWindow.xaml(.cs)   Interfaz (menú lateral y páginas)
 ImportWindow.xaml(.cs) Asistente de importación de CSV
+WelcomeWindow.xaml(.cs) Recorrido de bienvenida
 Themes/Styles.xaml     Paleta y estilos
 ViewModels/            Lógica de pantalla (MainViewModel dividido en archivos por tema)
 Services/              Respaldos, exportación e importación

@@ -17,7 +17,8 @@ public static class AppSettings
         string Theme = nameof(ThemeChoice.System),
         bool AutoRate = false,          // traer la cotización de internet al abrir la app (desactivado por defecto)
         string RateSource = "blue",     // oficial, blue, bolsa (MEP), contadoconliqui o tarjeta
-        string RatePrice = "venta");    // venta o compra
+        string RatePrice = "venta",     // venta o compra
+        bool WelcomeSeen = false);      // ya se mostró el recorrido de bienvenida
 
     private static string DataDir => Path.GetDirectoryName(AppDbContext.DbPath)!;
     private static string SettingsPath => Path.Combine(DataDir, "settings.json");
@@ -65,6 +66,12 @@ public static class AppSettings
     {
         get => Load().RatePrice is "compra" ? "compra" : "venta";
         set => Save(Load() with { RatePrice = value });
+    }
+
+    public static bool WelcomeSeen
+    {
+        get => Load().WelcomeSeen;
+        set => Save(Load() with { WelcomeSeen = value });
     }
 
     public static ThemeChoice Theme
