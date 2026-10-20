@@ -30,6 +30,18 @@ dotnet run
 
 También se puede abrir `CholinanzasApp.slnx` con Visual Studio y ejecutar con F5.
 
+### Instalador
+
+```powershell
+powershell -ExecutionPolicy Bypass -File installer\build.ps1
+```
+
+Genera `installer\output\Cholinanzas-Setup-<versión>.exe` (unos 46 MB). La app va **autocontenida** (incluye .NET): quien la instala no necesita instalar nada más. Se instala solo para el usuario actual, sin pedir permisos de administrador, en `%LOCALAPPDATA%\Programs\Cholinanzas`; crea el acceso del menú Inicio (el del escritorio es opcional) y aparece en *Aplicaciones instaladas*. Instalar una versión nueva encima conserva todos los datos. Al desinstalar pregunta si querés borrar también tus datos (por defecto, no).
+
+- La versión se cambia en `<Version>` de `CholinanzasApp.csproj`.
+- Si no tenés [Inno Setup 6](https://jrsoftware.org/isinfo.php), el script baja una copia portable del compilador a `%TEMP%` (no instala nada en Windows).
+- El instalador **no está firmado digitalmente**: Windows SmartScreen va a mostrar "Windows protegió su PC" hasta que se lo firme con un certificado de firma de código.
+
 ## Tus datos
 
 | Qué | Dónde |
@@ -82,6 +94,8 @@ Themes/Styles.xaml     Paleta y estilos
 ViewModels/            Lógica de pantalla (MainViewModel dividido en archivos por tema)
 Services/              Respaldos, exportación e importación
 Data/, Models/         Base de datos (EF Core + SQLite) y modelos
+Assets/                Ícono de la app
+installer/             Script del instalador (Inno Setup) y build.ps1
 ```
 
 ## Aviso

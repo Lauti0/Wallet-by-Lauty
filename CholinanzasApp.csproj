@@ -6,6 +6,15 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <!-- la app está en español: no se copian las traducciones de .NET a otros idiomas (achica el instalador) -->
+    <SatelliteResourceLanguages>es;en</SatelliteResourceLanguages>
+    <!-- la versión se cambia acá: la toma el .exe y, con installer\build.ps1, también el instalador -->
+    <Version>1.0.0</Version>
+    <Product>Cholinanzas</Product>
+    <AssemblyTitle>Cholinanzas</AssemblyTitle>
+    <!-- no agregar el hash del commit a la versión mostrada -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <!-- ThemeMode (tema Fluent de WPF) todavía está marcado como experimental -->
     <NoWarn>$(NoWarn);WPF0001</NoWarn>
   </PropertyGroup>

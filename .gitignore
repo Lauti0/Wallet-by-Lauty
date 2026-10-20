@@ -7,6 +7,10 @@ obj/
 *.exe
 *.pdb
 
+# Instalador: se genera con installer\build.ps1
+installer/publish/
+installer/output/
+
 # Visual Studio
 .vs/
 *.user
