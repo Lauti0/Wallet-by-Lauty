@@ -31,7 +31,8 @@ function Find-Iscc {
     Write-Host 'No tenés Inno Setup: bajo una copia portable del compilador (solo para armar el instalador)...'
     $cache = Join-Path $env:TEMP 'ch-inno'
     New-Item -ItemType Directory -Path $cache -Force | Out-Null
-    $pkg = Join-Path $cache 'inno.nupkg'
+    # un .nupkg es un zip, pero Expand-Archive solo acepta la extensión .zip
+    $pkg = Join-Path $cache 'inno.zip'
     Invoke-WebRequest 'https://api.nuget.org/v3-flatcontainer/tools.innosetup/6.4.3/tools.innosetup.6.4.3.nupkg' -OutFile $pkg
     Expand-Archive $pkg -DestinationPath (Join-Path $cache 'pkg') -Force
     return (Join-Path $cache 'pkg\tools\ISCC.exe')
