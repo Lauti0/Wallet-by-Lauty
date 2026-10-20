@@ -1,0 +1,43 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+        Paleta del tema OSCURO. Mismas claves que Colors.Light.xaml.
+        Contrastes medidos (WCAG): texto principal 13,5:1, texto apagado 6,4:1, verde 7,3:1, rojo 7,1:1,
+        naranja 8,0:1 y azul de texto 7,9:1 sobre CardBg; blanco sobre el botón azul 6,5:1.
+    -->
+
+    <!-- Superficies -->
+    <SolidColorBrush x:Key="PageBg" Color="#0F1320"/>
+    <SolidColorBrush x:Key="CardBg" Color="#1A2030"/>
+    <SolidColorBrush x:Key="CardBorder" Color="#2B3349"/>
+    <SolidColorBrush x:Key="Line" Color="#2B3349"/>
+
+    <!-- Menú lateral -->
+    <SolidColorBrush x:Key="SidebarBg" Color="#0A0D17"/>
+    <SolidColorBrush x:Key="SidebarHover" Color="#1A2238"/>
+    <SolidColorBrush x:Key="SidebarText" Color="#C9D1E4"/>
+    <SolidColorBrush x:Key="SidebarSubtext" Color="#8E9BBA"/>
+
+    <!-- Acento: el relleno sigue siendo oscuro para que el texto blanco se lea; el texto y las barras usan un azul claro -->
+    <SolidColorBrush x:Key="Accent" Color="#3A52C8"/>
+    <SolidColorBrush x:Key="AccentHover" Color="#4A63DB"/>
+    <SolidColorBrush x:Key="AccentText" Color="#9DB2FF"/>
+    <SolidColorBrush x:Key="AccentSoft" Color="#232C4A"/>
+    <SolidColorBrush x:Key="AccentSoftHover" Color="#2C3760"/>
+
+    <!-- Colores con significado -->
+    <SolidColorBrush x:Key="Positive" Color="#4CC38A"/>
+    <SolidColorBrush x:Key="Negative" Color="#FF8A7A"/>
+    <SolidColorBrush x:Key="Warning" Color="#F2A65A"/>
+
+    <!-- Fondos suaves: botón de borrar al pasar el mouse y avisos de presupuesto -->
+    <SolidColorBrush x:Key="DangerSoft" Color="#3A2025"/>
+    <SolidColorBrush x:Key="DangerBorder" Color="#7A3A40"/>
+    <SolidColorBrush x:Key="WarnSoft" Color="#33291A"/>
+    <SolidColorBrush x:Key="WarnBorder" Color="#6B5224"/>
+
+    <!-- Texto -->
+    <SolidColorBrush x:Key="TextMain" Color="#E6EAF2"/>
+    <SolidColorBrush x:Key="TextMuted" Color="#9AA3B5"/>
+</ResourceDictionary>

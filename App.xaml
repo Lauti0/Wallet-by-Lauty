@@ -7,6 +7,8 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <!-- el primero (colores) se reemplaza en ejecución al cambiar de tema: ver ThemeService -->
+                <ResourceDictionary Source="Themes/Colors.Light.xaml"/>
                 <ResourceDictionary Source="Themes/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

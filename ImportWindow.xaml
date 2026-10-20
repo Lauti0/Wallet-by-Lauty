@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Importar movimientos desde un CSV" Width="1020" Height="820" MinWidth="900" MinHeight="640"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource PageBg}" FontFamily="Segoe UI" FontSize="13"
-        TextElement.Foreground="{StaticResource TextMain}"
+        Background="{DynamicResource PageBg}" FontFamily="Segoe UI" FontSize="13"
+        TextElement.Foreground="{DynamicResource TextMain}"
         UseLayoutRounding="True" SnapsToDevicePixels="True"
         TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType"
         RenderOptions.ClearTypeHint="Enabled">
@@ -33,13 +33,13 @@
         <!-- Estado de cada fila: verde = se importa, naranja = ya existe, rojo = error -->
         <Style x:Key="StatusCell" TargetType="TextBlock" BasedOn="{StaticResource CellText}">
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="{StaticResource Positive}"/>
+            <Setter Property="Foreground" Value="{DynamicResource Positive}"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding Status}" Value="Duplicate">
-                    <Setter Property="Foreground" Value="{StaticResource Warning}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource Warning}"/>
                 </DataTrigger>
                 <DataTrigger Binding="{Binding Status}" Value="Error">
-                    <Setter Property="Foreground" Value="{StaticResource Negative}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource Negative}"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
@@ -210,7 +210,7 @@
         </ScrollViewer>
 
         <!-- Pie: la acción final siempre a la vista -->
-        <Border Grid.Row="1" Background="{StaticResource CardBg}" BorderBrush="{StaticResource Line}"
+        <Border Grid.Row="1" Background="{DynamicResource CardBg}" BorderBrush="{DynamicResource Line}"
                 BorderThickness="0,1,0,0" Padding="28,14">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">

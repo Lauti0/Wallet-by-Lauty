@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="¿Recordar esta categoría?" Width="580" SizeToContent="Height" ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
-        Background="{StaticResource PageBg}" FontFamily="Segoe UI" FontSize="13"
-        TextElement.Foreground="{StaticResource TextMain}"
+        Background="{DynamicResource PageBg}" FontFamily="Segoe UI" FontSize="13"
+        TextElement.Foreground="{DynamicResource TextMain}"
         UseLayoutRounding="True" SnapsToDevicePixels="True"
         TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType"
         RenderOptions.ClearTypeHint="Enabled">
@@ -22,7 +22,7 @@
         </StackPanel>
         <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,0"
                    Text="Se busca dentro de la descripción, sin importar mayúsculas ni acentos. Dejá solo la parte que identifica al comercio, sin números."/>
-        <TextBlock x:Name="ErrorText" Foreground="{StaticResource Negative}" Margin="0,8,0,0" TextWrapping="Wrap"
+        <TextBlock x:Name="ErrorText" Foreground="{DynamicResource Negative}" Margin="0,8,0,0" TextWrapping="Wrap"
                    Visibility="Collapsed" AutomationProperties.LiveSetting="Assertive"/>
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">

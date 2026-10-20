@@ -14,6 +14,7 @@ App de escritorio para Windows que administra tus finanzas personales: cuánta p
 - **Panorama general** con totales históricos, promedios, gráficos mes a mes y en qué se gasta más.
 - **Exportar** todo a Excel (`.xlsx`, una hoja por tema) y los movimientos a CSV.
 - **Importar movimientos desde el CSV del banco**: un asistente detecta el formato (separador, codificación, fechas, números, columnas de débito y crédito) y muestra una vista previa antes de guardar. Omite los movimientos que ya existen, así que se puede importar el mismo extracto dos veces sin duplicar, y hace un respaldo antes de importar.
+- **Modo oscuro**: tema claro, oscuro o "según Windows" (sigue el cambio del sistema), que se elige en la pestaña Cuentas y se aplica al instante.
 - **Editar** movimientos, transferencias, recurrentes, presupuestos, metas y cuentas ya cargados (botón *Editar* en cada fila: carga el elemento en el formulario). La moneda de una cuenta con movimientos no se puede cambiar.
 - **Reglas de categorías** ("si la descripción contiene *carrefour*, la categoría es Supermercado"): se aplican al importar, se sugieren al escribir un movimiento y pueden recategorizar lo que quedó en "Otros". Vienen unas reglas de ejemplo que se pueden cambiar o borrar. Cuando corregís la categoría de un movimiento, la app ofrece crear la regla para recordarlo (con el texto sugerido, que se puede editar).
 - **Respaldos automáticos** diarios, con copia opcional en otra carpeta (por ejemplo OneDrive) y restauración.
@@ -35,7 +36,7 @@ También se puede abrir `CholinanzasApp.slnx` con Visual Studio y ejecutar con F
 | --- | --- |
 | Base de datos (SQLite) | `%LOCALAPPDATA%\CholinanzasApp\finanzas.db` |
 | Respaldos | `%LOCALAPPDATA%\CholinanzasApp\Backups` (se conservan los últimos 30) |
-| Configuración | `%LOCALAPPDATA%\CholinanzasApp\settings.json` (carpeta extra de respaldos) |
+| Configuración | `%LOCALAPPDATA%\CholinanzasApp\settings.json` (carpeta extra de respaldos y tema) |
 | Registro de errores | `%LOCALAPPDATA%\CholinanzasApp\errores.log` |
 
 La variable de entorno `CHOLINANZAS_DB` permite usar otro archivo de base de datos (por ejemplo, para probar con datos ficticios); los respaldos y la configuración se guardan junto a ese archivo.
@@ -51,14 +52,14 @@ La variable de entorno `CHOLINANZAS_DB` permite usar otro archivo de base de dat
 
 Qué se hizo:
 
-- Contraste de colores de texto de al menos 4,5:1 (nivel AA de WCAG 2.x), medido con la fórmula de las pautas.
+- Contraste de colores de texto de al menos 4,5:1 (nivel AA de WCAG 2.x), medido con la fórmula de las pautas, en el tema claro y en el oscuro.
 - Anillo de foco visible al navegar con teclado en botones y menú.
 - Nombres accesibles para campos de formulario, botones de ícono (✕, flechas de mes), tablas y barras de progreso.
 - Texto alternativo de los gráficos (descripción con todos los valores); los mismos números están en la tabla "Mes a mes".
 - El significado nunca depende solo del color: hay texto ("Excedido", "Cerca del límite"), signo en los montos y columna de tipo.
 - Las alertas de presupuesto se exponen a tecnologías de asistencia como región en vivo.
 
-Qué **no** se probó: la app se verificó con UI Automation de Windows (lo que consumen los lectores de pantalla), pero no con un lector real como NVDA o Narrador, ni con alto contraste de Windows. No hay modo oscuro. No se afirma conformidad con ningún estándar.
+Qué **no** se probó: la app se verificó con UI Automation de Windows (lo que consumen los lectores de pantalla), pero no con un lector real como NVDA o Narrador, ni con alto contraste de Windows. No se afirma conformidad con ningún estándar.
 
 ## Seguridad
 

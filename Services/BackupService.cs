@@ -1,5 +1,4 @@
 using System.IO;
-using System.Text.Json;
 using CholinanzasApp.Data;
 using Microsoft.Data.Sqlite;
 
@@ -16,39 +15,18 @@ public static class BackupService
     public const int KeepCount = 30;
     private const string Pattern = "finanzas-*.db";
 
-    private sealed record Settings(string? ExtraBackupFolder);
-
     private static string DataDir => Path.GetDirectoryName(AppDbContext.DbPath)!;
     public static string BackupDir => Path.Combine(DataDir, "Backups");
-    private static string SettingsPath => Path.Combine(DataDir, "settings.json");
 
     /// <summary>Último problema ocurrido al respaldar, para mostrarlo en pantalla (null si todo salió bien).</summary>
     public static string? LastError { get; private set; }
 
     // ───────────── Carpeta extra ─────────────
 
-    public static string? ExtraFolder
-    {
-        get
-        {
-            try
-            {
-                return File.Exists(SettingsPath)
-                    ? JsonSerializer.Deserialize<Settings>(File.ReadAllText(SettingsPath))?.ExtraBackupFolder
-                    : null;
-            }
-            catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
-            {
-                return null; // un settings.json dañado no debe impedir que la app abra
-            }
-        }
-    }
+    // La preferencia vive en AppSettings (junto con el tema); un settings.json dañado no impide abrir la app.
+    public static string? ExtraFolder => AppSettings.ExtraBackupFolder;
 
-    public static void SetExtraFolder(string? folder)
-    {
-        Directory.CreateDirectory(DataDir);
-        File.WriteAllText(SettingsPath, JsonSerializer.Serialize(new Settings(string.IsNullOrWhiteSpace(folder) ? null : folder)));
-    }
+    public static void SetExtraFolder(string? folder) => AppSettings.ExtraBackupFolder = folder;
 
     // ───────────── Respaldar ─────────────
 

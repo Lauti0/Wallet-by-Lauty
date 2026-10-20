@@ -20,6 +20,9 @@ namespace CholinanzasApp
         {
             base.OnStartup(e);
 
+            // el tema se aplica antes de que se cree la ventana principal, para que no parpadee con el equivocado
+            ThemeService.Initialize();
+
             DispatcherUnhandledException += OnUnhandledError;
             AppDomain.CurrentDomain.UnhandledException += (_, args) => LogError(args.ExceptionObject as Exception);
 
