@@ -511,8 +511,13 @@
 
                 <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                     <StackPanel>
+                        <DockPanel Margin="0,0,0,12">
+                        <Button DockPanel.Dock="Right" Content="Importar desde CSV…" Style="{StaticResource ConfirmButton}"
+                                Padding="14,6" Command="{Binding ImportCsvCommand}"
+                                ToolTip="Cargar muchos movimientos juntos desde el archivo que descargás del banco"
+                                AutomationProperties.Name="Importar movimientos desde un CSV"/>
                         <!-- "Nuevo movimiento" o "Editar movimiento" (en azul para que se note que se está editando) -->
-                        <TextBlock Text="{Binding TransactionFormTitle}" Margin="0,0,0,12">
+                        <TextBlock Text="{Binding TransactionFormTitle}" VerticalAlignment="Center">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock" BasedOn="{StaticResource SectionTitle}">
                                     <Style.Triggers>
@@ -523,6 +528,7 @@
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
+                        </DockPanel>
                         <WrapPanel>
                             <StackPanel Style="{StaticResource Field}">
                                 <TextBlock Style="{StaticResource FieldLabel}" Text="Tipo"/>

@@ -16,6 +16,28 @@ public partial class MainViewModel
     public RelayCommand ExportCsvCommand => _exportCsvCommand ??= new(_ =>
         Export("CSV (*.csv)|*.csv", ".csv", "Cholinanzas-movimientos", ExportService.ExportMovementsCsv));
 
+    private RelayCommand? _importCsvCommand;
+
+    public RelayCommand ImportCsvCommand => _importCsvCommand ??= new(_ => OpenImport());
+
+    // Abre el asistente de importación. Si se importó algo, se muestra el mes del movimiento más nuevo.
+    private void OpenImport()
+    {
+        var viewModel = new ImportViewModel();
+        var window = new ImportWindow(viewModel) { Owner = Application.Current.MainWindow };
+        window.ShowDialog();
+        if (viewModel.ImportedCount == 0) return;
+
+        if (viewModel.NewestImportedDate is { } newest)
+        {
+            _month = new DateTime(newest.Year, newest.Month, 1);
+            Raise(nameof(MonthTitle));
+        }
+        ClearTransactionForm(); // recarga todo
+        MessageBox.Show($"Listo, se importaron {viewModel.ImportedCount:N0} movimientos.", "Importar",
+            MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
     // Pide dónde guardar, escribe el archivo y ofrece abrirlo. Los errores comunes se explican en criollo.
     private static void Export(string filter, string extension, string baseName, Action<string> write)
     {

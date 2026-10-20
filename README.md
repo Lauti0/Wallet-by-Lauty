@@ -13,6 +13,8 @@ App de escritorio para Windows que administra tus finanzas personales: cuánta p
 - **Cotización del dólar** cargada a mano y patrimonio total en pesos y en dólares.
 - **Panorama general** con totales históricos, promedios, gráficos mes a mes y en qué se gasta más.
 - **Exportar** todo a Excel (`.xlsx`, una hoja por tema) y los movimientos a CSV.
+- **Importar movimientos desde el CSV del banco**: un asistente detecta el formato (separador, codificación, fechas, números, columnas de débito y crédito) y muestra una vista previa antes de guardar. Omite los movimientos que ya existen, así que se puede importar el mismo extracto dos veces sin duplicar, y hace un respaldo antes de importar.
+- **Editar movimientos** ya cargados.
 - **Respaldos automáticos** diarios, con copia opcional en otra carpeta (por ejemplo OneDrive) y restauración.
 
 ## Requisitos y cómo ejecutarla
@@ -65,6 +67,7 @@ Es una app local sin servidor ni puertos abiertos, por lo que los ataques de den
 - Tope en montos (hasta 1.000.000.000.000) y en la longitud de textos; límite de tamaño del registro de errores; rotación de respaldos.
 - Errores inesperados: aviso al usuario y registro, en vez de cierre brusco.
 - Exportación a CSV con protección contra inyección de fórmulas en Excel.
+- Importación de CSV con topes (archivo de hasta 10 MB, 50.000 filas, 50 columnas, textos recortados), sin ejecutar nada del archivo, y todo o nada al guardar.
 - Copia de la base con la API nativa de SQLite y verificación de integridad antes de restaurar.
 
 ## Estructura
@@ -72,9 +75,10 @@ Es una app local sin servidor ni puertos abiertos, por lo que los ataques de den
 ```
 App.xaml(.cs)          Arranque: instancia única, respaldo diario, manejo de errores
 MainWindow.xaml(.cs)   Interfaz (menú lateral y páginas)
+ImportWindow.xaml(.cs) Asistente de importación de CSV
 Themes/Styles.xaml     Paleta y estilos
 ViewModels/            Lógica de pantalla (MainViewModel dividido en archivos por tema)
-Services/              Respaldos y exportación
+Services/              Respaldos, exportación e importación
 Data/, Models/         Base de datos (EF Core + SQLite) y modelos
 ```
 

@@ -1,0 +1,227 @@
+<Window x:Class="CholinanzasApp.ImportWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Importar movimientos desde un CSV" Width="1020" Height="820" MinWidth="900" MinHeight="640"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource PageBg}" FontFamily="Segoe UI" FontSize="13"
+        TextElement.Foreground="{StaticResource TextMain}"
+        UseLayoutRounding="True" SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType"
+        RenderOptions.ClearTypeHint="Enabled">
+    <Window.Resources>
+        <Style x:Key="Field" TargetType="StackPanel">
+            <Setter Property="Margin" Value="0,0,14,12"/>
+        </Style>
+
+        <!-- Un solo monto vs. débito y crédito separados: cada modo muestra sus propias columnas -->
+        <Style x:Key="SingleAmountOnly" TargetType="StackPanel" BasedOn="{StaticResource Field}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SplitColumns}" Value="True">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="SplitOnly" TargetType="StackPanel" BasedOn="{StaticResource Field}">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SplitColumns}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Estado de cada fila: verde = se importa, naranja = ya existe, rojo = error -->
+        <Style x:Key="StatusCell" TargetType="TextBlock" BasedOn="{StaticResource CellText}">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource Positive}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Status}" Value="Duplicate">
+                    <Setter Property="Foreground" Value="{StaticResource Warning}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="Error">
+                    <Setter Property="Foreground" Value="{StaticResource Negative}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="28,24,12,16">
+                <TextBlock Style="{StaticResource PageTitle}" Text="Importar movimientos desde un CSV"/>
+                <TextBlock Style="{StaticResource Hint}" Margin="0,6,0,18" FontSize="13"
+                           Text="Elegí el archivo que descargaste del banco. La app detecta el formato y te propone qué es cada columna; vos revisás la vista previa y confirmás. No se guarda nada hasta que apretás Importar."/>
+
+                <!-- 1. ARCHIVO -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="1. Elegí el archivo" Margin="0,0,0,12"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="Elegir archivo CSV…" Style="{StaticResource PrimaryButton}"
+                                    Command="{Binding ChooseFileCommand}"/>
+                            <TextBlock Text="{Binding FileName}" VerticalAlignment="Center" Margin="14,0,0,0" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,12" Text="{Binding FileInfo}"/>
+
+                        <WrapPanel>
+                            <StackPanel Style="{StaticResource Field}">
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="Separador de columnas"/>
+                                <ComboBox Width="200" ItemsSource="{Binding Delimiters}" DisplayMemberPath="Label"
+                                          SelectedItem="{Binding SelectedDelimiter}"
+                                          AutomationProperties.Name="Separador de columnas"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}">
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="Filas a saltear al inicio"/>
+                                <TextBox Width="110" MaxLength="3" Text="{Binding SkipRowsText, UpdateSourceTrigger=PropertyChanged}"
+                                         ToolTip="Algunos bancos ponen datos de la cuenta antes de la tabla"
+                                         AutomationProperties.Name="Filas a saltear al inicio"/>
+                            </StackPanel>
+                            <CheckBox Margin="0,22,0,0" Content="La primera fila tiene los títulos de las columnas"
+                                      IsChecked="{Binding HasHeader}"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- 2. COLUMNAS -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="2. ¿Qué es cada columna?" Margin="0,0,0,4"/>
+                        <TextBlock Style="{StaticResource Hint}" Margin="0,0,0,12"
+                                   Text="Ya viene propuesto: corregilo solo si algo no coincide."/>
+
+                        <WrapPanel>
+                            <StackPanel Style="{StaticResource Field}">
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="Cuenta donde se importa"/>
+                                <ComboBox Width="260" ItemsSource="{Binding Accounts}" DisplayMemberPath="Name"
+                                          SelectedItem="{Binding SelectedAccount}"
+                                          AutomationProperties.Name="Cuenta donde se importa"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}">
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="Columna de la fecha"/>
+                                <ComboBox Width="300" ItemsSource="{Binding Columns}" DisplayMemberPath="Label"
+                                          SelectedItem="{Binding SelectedDateColumn}"
+                                          AutomationProperties.Name="Columna de la fecha"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}">
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="Columna de la descripción"/>
+                                <ComboBox Width="300" ItemsSource="{Binding Columns}" DisplayMemberPath="Label"
+                                          SelectedItem="{Binding SelectedDescriptionColumn}"
+                                          AutomationProperties.Name="Columna de la descripción"/>
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <RadioButton GroupName="amountMode" Margin="0,0,24,0" IsChecked="{Binding UseSingleAmount}"
+                                         Content="Una sola columna de monto (los gastos son negativos)"/>
+                            <RadioButton GroupName="amountMode" IsChecked="{Binding SplitColumns}"
+                                         Content="Débito y crédito en columnas separadas"/>
+                        </StackPanel>
+
+                        <WrapPanel>
+                            <StackPanel Style="{StaticResource SingleAmountOnly}">
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="Columna del monto"/>
+                                <ComboBox Width="300" ItemsSource="{Binding Columns}" DisplayMemberPath="Label"
+                                          SelectedItem="{Binding SelectedAmountColumn}"
+                                          AutomationProperties.Name="Columna del monto"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource SplitOnly}">
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="Columna de débitos (gastos)"/>
+                                <ComboBox Width="300" ItemsSource="{Binding Columns}" DisplayMemberPath="Label"
+                                          SelectedItem="{Binding SelectedDebitColumn}"
+                                          AutomationProperties.Name="Columna de débitos"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource SplitOnly}">
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="Columna de créditos (ingresos)"/>
+                                <ComboBox Width="300" ItemsSource="{Binding Columns}" DisplayMemberPath="Label"
+                                          SelectedItem="{Binding SelectedCreditColumn}"
+                                          AutomationProperties.Name="Columna de créditos"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}">
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="Columna de la categoría (opcional)"/>
+                                <ComboBox Width="300" ItemsSource="{Binding Columns}" DisplayMemberPath="Label"
+                                          SelectedItem="{Binding SelectedCategoryColumn}"
+                                          AutomationProperties.Name="Columna de la categoría"/>
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <WrapPanel>
+                            <StackPanel Style="{StaticResource Field}">
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="Formato de las fechas"/>
+                                <ComboBox Width="260" ItemsSource="{Binding DateStyles}" DisplayMemberPath="Label"
+                                          SelectedItem="{Binding SelectedDateStyle}"
+                                          AutomationProperties.Name="Formato de las fechas"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}">
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="Formato de los números"/>
+                                <ComboBox Width="260" ItemsSource="{Binding DecimalStyles}" DisplayMemberPath="Label"
+                                          SelectedItem="{Binding SelectedDecimalStyle}"
+                                          AutomationProperties.Name="Formato de los números"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}">
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="Categoría para los gastos sin categoría"/>
+                                <ComboBox Width="220" ItemsSource="{Binding ExpenseCategories}" DisplayMemberPath="Name"
+                                          SelectedItem="{Binding DefaultExpenseCategory}"
+                                          AutomationProperties.Name="Categoría para los gastos sin categoría"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}">
+                                <TextBlock Style="{StaticResource FieldLabel}" Text="Categoría para los ingresos sin categoría"/>
+                                <ComboBox Width="220" ItemsSource="{Binding IncomeCategories}" DisplayMemberPath="Name"
+                                          SelectedItem="{Binding DefaultIncomeCategory}"
+                                          AutomationProperties.Name="Categoría para los ingresos sin categoría"/>
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <CheckBox IsChecked="{Binding InvertSign}"
+                                  Content="Invertir el signo (usalo si los gastos vienen como positivos y los ingresos como negativos)"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- 3. VISTA PREVIA -->
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="3. Vista previa" Margin="0,0,0,4"/>
+                        <TextBlock FontWeight="SemiBold" Margin="0,0,0,10" TextWrapping="Wrap" Text="{Binding Summary}"
+                                   AutomationProperties.LiveSetting="Polite"/>
+                        <DataGrid Style="{StaticResource TableGrid}" ItemsSource="{Binding Preview}" Height="320"
+                                  AutomationProperties.Name="Vista previa de los movimientos a importar">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Fila" Binding="{Binding Line}" Width="64"
+                                                    ElementStyle="{StaticResource CellText}"/>
+                                <DataGridTextColumn Header="Fecha" Binding="{Binding DateText}" Width="100"
+                                                    ElementStyle="{StaticResource CellText}"/>
+                                <DataGridTextColumn Header="Descripción" Binding="{Binding Description}" Width="*" MinWidth="140"
+                                                    ElementStyle="{StaticResource CellText}"/>
+                                <DataGridTextColumn Header="Monto" Binding="{Binding AmountText}" Width="150"
+                                                    ElementStyle="{StaticResource CellRight}"/>
+                                <DataGridTextColumn Header="Tipo" Binding="{Binding TypeText}" Width="80"
+                                                    ElementStyle="{StaticResource CellText}"/>
+                                <DataGridTextColumn Header="Estado" Binding="{Binding StatusText}" Width="210"
+                                                    ElementStyle="{StaticResource StatusCell}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Pie: la acción final siempre a la vista -->
+        <Border Grid.Row="1" Background="{StaticResource CardBg}" BorderBrush="{StaticResource Line}"
+                BorderThickness="0,1,0,0" Padding="28,14">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="Cancelar" Style="{StaticResource ConfirmButton}" Padding="16,6"
+                            Command="{Binding CancelCommand}"/>
+                    <Button Content="{Binding ImportText}" Style="{StaticResource PrimaryButton}" Margin="10,0,0,0"
+                            IsEnabled="{Binding CanImport}" Command="{Binding ImportCommand}"/>
+                </StackPanel>
+                <CheckBox VerticalAlignment="Center" IsChecked="{Binding SkipDuplicates}"
+                          Content="Omitir los movimientos que ya existen en esa cuenta"/>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>
