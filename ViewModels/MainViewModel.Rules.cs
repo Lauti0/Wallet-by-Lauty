@@ -114,7 +114,7 @@ public partial class MainViewModel
     // Cómo se le pregunta al usuario y cómo se le avisa. Son propiedades para poder reemplazarlas en las pruebas.
     public Func<RuleOffer, string?> RuleOfferPrompt { get; set; } = AskWithDialog;
     public Action<string> InfoNotifier { get; set; } = text =>
-        MessageBox.Show(text, "Reglas de categorías", MessageBoxButton.OK, MessageBoxImage.Information);
+        MessageBox.Show(text, "Cholinanzas", MessageBoxButton.OK, MessageBoxImage.Information);
 
     // Abre la ventana que propone el texto de la regla; devuelve el texto elegido o null si no quiso crearla.
     private static string? AskWithDialog(RuleOffer offer)

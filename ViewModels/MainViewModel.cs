@@ -361,21 +361,39 @@ public partial class MainViewModel : ViewModelBase
 
         using (var db = new AppDbContext())
         {
-            db.Recurrings.Add(new RecurringTransaction
+            if (_editingRecurringId is { } id)
             {
-                Description = NewRecDescription.Trim(),
-                Amount = amount,
-                Type = NewRecType,
-                DayOfMonth = day,
-                AccountId = NewRecAccount.Id,
-                CategoryId = NewRecCategory.Id
-            });
+                // los movimientos que ya se registraron desde este recurrente no cambian: solo lo que falta
+                var existing = db.Recurrings.Find(id);
+                if (existing is null)
+                {
+                    InfoNotifier("Ese recurrente ya no existe.");
+                    ClearRecurringForm();
+                    return;
+                }
+                existing.Description = NewRecDescription.Trim();
+                existing.Amount = amount;
+                existing.Type = NewRecType;
+                existing.DayOfMonth = day;
+                existing.AccountId = NewRecAccount.Id;
+                existing.CategoryId = NewRecCategory.Id;
+            }
+            else
+            {
+                db.Recurrings.Add(new RecurringTransaction
+                {
+                    Description = NewRecDescription.Trim(),
+                    Amount = amount,
+                    Type = NewRecType,
+                    DayOfMonth = day,
+                    AccountId = NewRecAccount.Id,
+                    CategoryId = NewRecCategory.Id
+                });
+            }
             db.SaveChanges();
         }
 
-        NewRecDescription = "";
-        NewRecAmount = "";
-        Reload();
+        ClearRecurringForm();
     }
 
     private void DeleteRecurring(RecurringRow? row)
@@ -388,6 +406,7 @@ public partial class MainViewModel : ViewModelBase
         {
             db.Recurrings.Where(r => r.Id == row.Id).ExecuteDelete();
         }
+        if (_editingRecurringId == row.Id) SetEditingRecurring(null);
         Reload();
     }
 
@@ -566,17 +585,43 @@ public partial class MainViewModel : ViewModelBase
 
         using (var db = new AppDbContext())
         {
-            db.Accounts.Add(new Account
+            if (_editingAccountId is { } id)
             {
-                Name = NewAccountName.Trim(),
-                Currency = NewAccountCurrency,
-                InitialBalance = initial
-            });
+                var existing = db.Accounts.Find(id);
+                if (existing is null)
+                {
+                    InfoNotifier("Esa cuenta ya no existe.");
+                    ClearAccountForm();
+                    return;
+                }
+
+                // cambiar la moneda de una cuenta con movimientos dejaría todos sus montos sin sentido
+                var inUse = db.Transactions.Any(t => t.AccountId == id)
+                            || db.Transfers.Any(t => t.FromAccountId == id || t.ToAccountId == id)
+                            || db.Recurrings.Any(r => r.AccountId == id);
+                if (existing.Currency != NewAccountCurrency && inUse)
+                {
+                    InfoNotifier("No se puede cambiar la moneda de una cuenta que ya tiene movimientos, transferencias o recurrentes. " +
+                                 "Podés crear una cuenta nueva en la otra moneda.");
+                    return;
+                }
+
+                existing.Name = NewAccountName.Trim();
+                existing.Currency = NewAccountCurrency;
+                existing.InitialBalance = initial;
+            }
+            else
+            {
+                db.Accounts.Add(new Account
+                {
+                    Name = NewAccountName.Trim(),
+                    Currency = NewAccountCurrency,
+                    InitialBalance = initial
+                });
+            }
             db.SaveChanges();
         }
 
-        NewAccountName = "";
-        NewAccountInitial = "0";
-        Reload();
+        ClearAccountForm();
     }
 }

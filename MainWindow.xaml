@@ -87,6 +87,29 @@
             </Style.Triggers>
         </Style>
 
+        <!-- Título de un formulario que también sirve para editar: se pinta de azul mientras se edita (Tag = ¿se está editando?) -->
+        <Style x:Key="EditableTitle" TargetType="TextBlock" BasedOn="{StaticResource SectionTitle}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- "Cancelar" de un formulario: solo se ve mientras se edita (Tag = ¿se está editando?) -->
+        <Style x:Key="CancelEditButton" TargetType="Button" BasedOn="{StaticResource ConfirmButton}">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Setter Property="Padding" Value="16,6"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="Margin" Value="8,0,0,12"/>
+            <Setter Property="ToolTip" Value="Descartar los cambios"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <!-- Campo de formulario: etiqueta arriba, control abajo -->
         <Style x:Key="Field" TargetType="StackPanel">
             <Setter Property="Margin" Value="0,0,14,12"/>
@@ -722,7 +745,8 @@
 
                 <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Style="{StaticResource SectionTitle}" Text="Mover plata entre mis cuentas" Margin="0,0,0,12"/>
+                        <TextBlock Style="{StaticResource EditableTitle}" Tag="{Binding IsEditingTransfer}"
+                                   Text="{Binding TransferFormTitle}" Margin="0,0,0,12"/>
                         <WrapPanel>
                             <StackPanel Style="{StaticResource Field}">
                                 <TextBlock Style="{StaticResource FieldLabel}" Text="Fecha"/>
@@ -751,8 +775,10 @@
                                 <TextBlock Style="{StaticResource FieldLabel}" Text="Descripción (opcional)"/>
                                 <TextBox Width="180" MaxLength="200" Text="{Binding TransferDescription, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
-                            <Button Content="Transferir" Style="{StaticResource PrimaryButton}" VerticalAlignment="Bottom"
+                            <Button Content="{Binding SaveTransferText}" Style="{StaticResource PrimaryButton}" VerticalAlignment="Bottom"
                                     Margin="0,0,0,12" Command="{Binding AddTransferCommand}"/>
+                            <Button Content="Cancelar" Tag="{Binding IsEditingTransfer}" Style="{StaticResource CancelEditButton}"
+                                    Command="{Binding CancelTransferEditCommand}"/>
                         </WrapPanel>
                         <TextBlock Style="{StaticResource Hint}"
                                    Text="No cuenta como ingreso ni gasto. Para pasar de pesos a dólares, indicá cuánto sale y cuánto entra: queda guardada la cotización de esa operación."/>
@@ -766,18 +792,29 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Fecha" Binding="{Binding Date, StringFormat=dd/MM/yyyy}" Width="95"
                                                     ElementStyle="{StaticResource CellText}"/>
-                                <DataGridTextColumn Header="Desde" Binding="{Binding From}" Width="110"
+                                <DataGridTextColumn Header="Desde" Binding="{Binding From}" Width="100"
                                                     ElementStyle="{StaticResource CellText}"/>
-                                <DataGridTextColumn Header="Hacia" Binding="{Binding To}" Width="110"
+                                <DataGridTextColumn Header="Hacia" Binding="{Binding To}" Width="100"
                                                     ElementStyle="{StaticResource CellText}"/>
-                                <DataGridTextColumn Header="Sale" Binding="{Binding OutText}" Width="130"
+                                <DataGridTextColumn Header="Sale" Binding="{Binding OutText}" Width="120"
                                                     ElementStyle="{StaticResource CellRight}"/>
-                                <DataGridTextColumn Header="Entra" Binding="{Binding InText}" Width="130"
+                                <DataGridTextColumn Header="Entra" Binding="{Binding InText}" Width="120"
                                                     ElementStyle="{StaticResource CellRight}"/>
-                                <DataGridTextColumn Header="Cotización" Binding="{Binding RateText}" Width="110"
+                                <DataGridTextColumn Header="Cotización" Binding="{Binding RateText}" Width="100"
                                                     ElementStyle="{StaticResource CellRight}"/>
                                 <DataGridTextColumn Header="Descripción" Binding="{Binding Description}" Width="*" MinWidth="100"
                                                     ElementStyle="{StaticResource CellText}"/>
+                                <DataGridTemplateColumn Width="70">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="Editar" ToolTip="Modificar esta transferencia"
+                                                    AutomationProperties.Name="Editar" Style="{StaticResource ConfirmButton}"
+                                                    Command="{Binding DataContext.EditTransferCommand,
+                                                              RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTemplateColumn Width="45">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -804,7 +841,8 @@
 
                     <Border Style="{StaticResource Card}">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource SectionTitle}" Text="Nuevo movimiento que se repite todos los meses" Margin="0,0,0,12"/>
+                            <TextBlock Style="{StaticResource EditableTitle}" Tag="{Binding IsEditingRecurring}"
+                                       Text="{Binding RecurringFormTitle}" Margin="0,0,0,12"/>
                             <WrapPanel>
                                 <StackPanel Style="{StaticResource Field}">
                                     <TextBlock Style="{StaticResource FieldLabel}" Text="Tipo"/>
@@ -833,8 +871,10 @@
                                     <ComboBox Width="160" ItemsSource="{Binding RecFilteredCategories}" DisplayMemberPath="Name"
                                               SelectedItem="{Binding NewRecCategory}"/>
                                 </StackPanel>
-                                <Button Content="＋ Agregar" Style="{StaticResource PrimaryButton}" VerticalAlignment="Bottom"
+                                <Button Content="{Binding SaveRecurringText}" Style="{StaticResource PrimaryButton}" VerticalAlignment="Bottom"
                                         Margin="0,0,0,12" Command="{Binding AddRecurringCommand}"/>
+                                <Button Content="Cancelar" Tag="{Binding IsEditingRecurring}" Style="{StaticResource CancelEditButton}"
+                                        Command="{Binding CancelRecurringEditCommand}"/>
                             </WrapPanel>
                         </StackPanel>
                     </Border>
@@ -893,6 +933,17 @@
                                                         ElementStyle="{StaticResource CellText}"/>
                                     <DataGridTextColumn Header="Monto" Binding="{Binding AmountText}" Width="160"
                                                         ElementStyle="{StaticResource AmountByType}"/>
+                                    <DataGridTemplateColumn Width="70">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="Editar" ToolTip="Modificar este recurrente"
+                                                        AutomationProperties.Name="Editar" Style="{StaticResource ConfirmButton}"
+                                                        Command="{Binding DataContext.EditRecurringCommand,
+                                                                  RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                     <DataGridTemplateColumn Width="50">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -923,7 +974,8 @@
 
                 <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Style="{StaticResource SectionTitle}" Text="Poné un límite mensual a una categoría" Margin="0,0,0,12"/>
+                        <TextBlock Style="{StaticResource EditableTitle}" Tag="{Binding IsEditingBudget}"
+                                   Text="{Binding BudgetFormTitle}" Margin="0,0,0,12"/>
                         <WrapPanel>
                             <StackPanel Style="{StaticResource Field}">
                                 <TextBlock Style="{StaticResource FieldLabel}" Text="Categoría"/>
@@ -938,11 +990,13 @@
                                 <TextBlock Style="{StaticResource FieldLabel}" Text="Límite por mes"/>
                                 <TextBox Width="150" Text="{Binding NewBudgetAmount, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
-                            <Button Content="Guardar" Style="{StaticResource PrimaryButton}" VerticalAlignment="Bottom"
+                            <Button Content="{Binding SaveBudgetText}" Style="{StaticResource PrimaryButton}" VerticalAlignment="Bottom"
                                     Margin="0,0,0,12" Command="{Binding AddBudgetCommand}"/>
+                            <Button Content="Cancelar" Tag="{Binding IsEditingBudget}" Style="{StaticResource CancelEditButton}"
+                                    Command="{Binding CancelBudgetEditCommand}"/>
                         </WrapPanel>
                         <TextBlock Style="{StaticResource Hint}"
-                                   Text="Si ya hay un límite para esa categoría y moneda, se actualiza."/>
+                                   Text="Hay un solo presupuesto por categoría y moneda. Si agregás uno que ya existe, se actualiza su límite."/>
                     </StackPanel>
                 </Border>
 
@@ -951,15 +1005,15 @@
                         <DataGrid Style="{StaticResource TableGrid}" ItemsSource="{Binding Budgets}"
                                   AutomationProperties.Name="Presupuestos del mes">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Categoría" Binding="{Binding Category}" Width="*" MinWidth="130"
+                                <DataGridTextColumn Header="Categoría" Binding="{Binding Category}" Width="*" MinWidth="110"
                                                     ElementStyle="{StaticResource CellText}"/>
-                                <DataGridTextColumn Header="Límite" Binding="{Binding LimitText}" Width="125"
+                                <DataGridTextColumn Header="Límite" Binding="{Binding LimitText}" Width="115"
                                                     ElementStyle="{StaticResource CellRight}"/>
-                                <DataGridTextColumn Header="Gastado" Binding="{Binding SpentText}" Width="125"
+                                <DataGridTextColumn Header="Gastado" Binding="{Binding SpentText}" Width="115"
                                                     ElementStyle="{StaticResource CellRight}"/>
-                                <DataGridTextColumn Header="Queda" Binding="{Binding RemainingText}" Width="125"
+                                <DataGridTextColumn Header="Queda" Binding="{Binding RemainingText}" Width="115"
                                                     ElementStyle="{StaticResource CellRight}"/>
-                                <DataGridTemplateColumn Header="Uso" Width="120">
+                                <DataGridTemplateColumn Header="Uso" Width="100">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <ProgressBar Minimum="0" Maximum="100" Height="8" Margin="10,0"
@@ -987,6 +1041,17 @@
                                                     ElementStyle="{StaticResource CellRight}"/>
                                 <DataGridTextColumn Header="Estado" Binding="{Binding Status}" Width="125"
                                                     ElementStyle="{StaticResource BudgetStatus}"/>
+                                <DataGridTemplateColumn Width="70">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="Editar" ToolTip="Modificar este presupuesto"
+                                                    AutomationProperties.Name="Editar" Style="{StaticResource ConfirmButton}"
+                                                    Command="{Binding DataContext.EditBudgetCommand,
+                                                              RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTemplateColumn Width="45">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -1047,7 +1112,8 @@
 
                     <Border Style="{StaticResource Card}">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource SectionTitle}" Text="Nueva meta" Margin="0,0,0,12"/>
+                            <TextBlock Style="{StaticResource EditableTitle}" Tag="{Binding IsEditingGoal}"
+                                       Text="{Binding GoalFormTitle}" Margin="0,0,0,12"/>
                             <WrapPanel>
                                 <StackPanel Style="{StaticResource Field}">
                                     <TextBlock Style="{StaticResource FieldLabel}" Text="Nombre"/>
@@ -1070,8 +1136,10 @@
                                     <TextBlock Style="{StaticResource FieldLabel}" Text="Fecha objetivo"/>
                                     <DatePicker Width="140" SelectedDate="{Binding NewGoalDate}"/>
                                 </StackPanel>
-                                <Button Content="＋ Agregar" Style="{StaticResource PrimaryButton}" VerticalAlignment="Bottom"
+                                <Button Content="{Binding SaveGoalText}" Style="{StaticResource PrimaryButton}" VerticalAlignment="Bottom"
                                         Margin="0,0,0,12" Command="{Binding AddGoalCommand}"/>
+                                <Button Content="Cancelar" Tag="{Binding IsEditingGoal}" Style="{StaticResource CancelEditButton}"
+                                        Command="{Binding CancelGoalEditCommand}"/>
                             </WrapPanel>
                         </StackPanel>
                     </Border>
@@ -1082,7 +1150,7 @@
                             <DataGrid Style="{StaticResource TableGrid}" ItemsSource="{Binding Goals}" AutomationProperties.Name="Metas de ahorro"
                                       SelectedItem="{Binding SelectedGoal}" SelectionMode="Single" MaxHeight="320">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Meta" Binding="{Binding Name}" Width="*" MinWidth="130"
+                                    <DataGridTextColumn Header="Meta" Binding="{Binding Name}" Width="*" MinWidth="110"
                                                         ElementStyle="{StaticResource CellText}"/>
                                     <DataGridTextColumn Header="Objetivo" Binding="{Binding TargetText}" Width="125"
                                                         ElementStyle="{StaticResource CellRight}"/>
@@ -1104,6 +1172,17 @@
                                                         ElementStyle="{StaticResource CellText}"/>
                                     <DataGridTextColumn Header="Por mes" Binding="{Binding MonthlyNeededText}" Width="125"
                                                         ElementStyle="{StaticResource CellRight}"/>
+                                    <DataGridTemplateColumn Width="70">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="Editar" ToolTip="Modificar esta meta"
+                                                        AutomationProperties.Name="Editar" Style="{StaticResource ConfirmButton}"
+                                                        Command="{Binding DataContext.EditGoalCommand,
+                                                                  RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                     <DataGridTemplateColumn Width="45">
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
@@ -1141,7 +1220,8 @@
 
                     <Border Style="{StaticResource Card}">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource SectionTitle}" Text="Nueva cuenta" Margin="0,0,0,12"/>
+                            <TextBlock Style="{StaticResource EditableTitle}" Tag="{Binding IsEditingAccount}"
+                                       Text="{Binding AccountFormTitle}" Margin="0,0,0,12"/>
                             <WrapPanel>
                                 <StackPanel Style="{StaticResource Field}">
                                     <TextBlock Style="{StaticResource FieldLabel}" Text="Nombre"/>
@@ -1156,8 +1236,10 @@
                                     <TextBlock Style="{StaticResource FieldLabel}" Text="Saldo inicial"/>
                                     <TextBox Width="150" Text="{Binding NewAccountInitial, UpdateSourceTrigger=PropertyChanged}"/>
                                 </StackPanel>
-                                <Button Content="＋ Agregar" Style="{StaticResource PrimaryButton}" VerticalAlignment="Bottom"
+                                <Button Content="{Binding SaveAccountText}" Style="{StaticResource PrimaryButton}" VerticalAlignment="Bottom"
                                         Margin="0,0,0,12" Command="{Binding AddAccountCommand}"/>
+                                <Button Content="Cancelar" Tag="{Binding IsEditingAccount}" Style="{StaticResource CancelEditButton}"
+                                        Command="{Binding CancelAccountEditCommand}"/>
                             </WrapPanel>
                             <TextBlock Style="{StaticResource Hint}"
                                        Text="El saldo inicial es lo que tenés hoy en esa cuenta; a partir de ahí se suman tus movimientos."/>
@@ -1176,6 +1258,17 @@
                                                         ElementStyle="{StaticResource CellText}"/>
                                     <DataGridTextColumn Header="Saldo actual" Binding="{Binding BalanceText}" Width="180"
                                                         ElementStyle="{StaticResource CellRight}"/>
+                                    <DataGridTemplateColumn Width="80">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="Editar" ToolTip="Cambiar el nombre o el saldo inicial"
+                                                        AutomationProperties.Name="Editar" Style="{StaticResource ConfirmButton}"
+                                                        Command="{Binding DataContext.EditAccountCommand,
+                                                                  RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </StackPanel>

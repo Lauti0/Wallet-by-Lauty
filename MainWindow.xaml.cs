@@ -17,7 +17,15 @@ namespace CholinanzasApp
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainViewModel();
+            var viewModel = new MainViewModel();
+            DataContext = viewModel;
+
+            // Al apretar Editar, el formulario (arriba de la página) puede quedar fuera de la pantalla: se sube hasta él.
+            viewModel.EditStarted += () =>
+            {
+                if (((TabControl)Content).SelectedContent is ScrollViewer page) page.ScrollToTop();
+            };
+
             Loaded += (_, _) => LabelFormFields(this);
         }
 

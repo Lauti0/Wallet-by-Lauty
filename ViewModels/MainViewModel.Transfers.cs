@@ -163,22 +163,40 @@ public partial class MainViewModel
 
         using (var db = new AppDbContext())
         {
-            db.Transfers.Add(new Transfer
+            if (_editingTransferId is { } id)
             {
-                Date = TransferDate.Date,
-                AmountOut = amountOut,
-                AmountIn = Math.Round(amountIn, 2),
-                Description = TransferDescription.Trim(),
-                FromAccountId = TransferFrom.Id,
-                ToAccountId = TransferTo.Id
-            });
+                var existing = db.Transfers.Find(id);
+                if (existing is null)
+                {
+                    // se borró mientras se editaba
+                    InfoNotifier("Esa transferencia ya no existe.");
+                    ClearTransferForm();
+                    return;
+                }
+                existing.Date = TransferDate.Date;
+                existing.AmountOut = amountOut;
+                existing.AmountIn = Math.Round(amountIn, 2);
+                existing.Description = TransferDescription.Trim();
+                existing.FromAccountId = TransferFrom.Id;
+                existing.ToAccountId = TransferTo.Id;
+            }
+            else
+            {
+                db.Transfers.Add(new Transfer
+                {
+                    Date = TransferDate.Date,
+                    AmountOut = amountOut,
+                    AmountIn = Math.Round(amountIn, 2),
+                    Description = TransferDescription.Trim(),
+                    FromAccountId = TransferFrom.Id,
+                    ToAccountId = TransferTo.Id
+                });
+            }
             db.SaveChanges();
         }
 
-        TransferAmountOut = "";
-        TransferAmountIn = "";
-        TransferDescription = "";
-        Reload();
+        ShowMonthOf(TransferDate);
+        ClearTransferForm();
     }
 
     private void DeleteTransfer(TransferRow? row)
@@ -191,6 +209,7 @@ public partial class MainViewModel
         {
             db.Transfers.Where(t => t.Id == row.Id).ExecuteDelete();
         }
+        if (_editingTransferId == row.Id) SetEditingTransfer(null);
         Reload();
     }
 }

@@ -174,23 +174,49 @@ public partial class MainViewModel
 
         using (var db = new AppDbContext())
         {
-            // un solo presupuesto por categoría y moneda: si existe, se actualiza
-            var existing = db.Budgets.FirstOrDefault(b =>
-                b.CategoryId == NewBudgetCategory.Id && b.Currency == NewBudgetCurrency);
-            if (existing is null)
-                db.Budgets.Add(new Budget
+            if (_editingBudgetId is { } id)
+            {
+                var editing = db.Budgets.Find(id);
+                if (editing is null)
                 {
-                    CategoryId = NewBudgetCategory.Id,
-                    Currency = NewBudgetCurrency,
-                    Amount = amount
-                });
+                    InfoNotifier("Ese presupuesto ya no existe.");
+                    ClearBudgetForm();
+                    return;
+                }
+
+                // hay un solo presupuesto por categoría y moneda: no se puede dejar este igual a otro
+                var clash = db.Budgets.FirstOrDefault(b =>
+                    b.Id != id && b.CategoryId == NewBudgetCategory.Id && b.Currency == NewBudgetCurrency);
+                if (clash is not null)
+                {
+                    InfoNotifier($"Ya hay un presupuesto de {NewBudgetCategory.Name} en {NewBudgetCurrency}. " +
+                                 "Editá ese o borralo antes de cambiar este.");
+                    return;
+                }
+
+                editing.CategoryId = NewBudgetCategory.Id;
+                editing.Currency = NewBudgetCurrency;
+                editing.Amount = amount;
+            }
             else
-                existing.Amount = amount;
+            {
+                // un solo presupuesto por categoría y moneda: si existe, se actualiza
+                var existing = db.Budgets.FirstOrDefault(b =>
+                    b.CategoryId == NewBudgetCategory.Id && b.Currency == NewBudgetCurrency);
+                if (existing is null)
+                    db.Budgets.Add(new Budget
+                    {
+                        CategoryId = NewBudgetCategory.Id,
+                        Currency = NewBudgetCurrency,
+                        Amount = amount
+                    });
+                else
+                    existing.Amount = amount;
+            }
             db.SaveChanges();
         }
 
-        NewBudgetAmount = "";
-        Reload();
+        ClearBudgetForm();
     }
 
     private void DeleteBudget(BudgetRow? row)
@@ -203,6 +229,7 @@ public partial class MainViewModel
         {
             db.Budgets.Where(b => b.Id == row.Id).ExecuteDelete();
         }
+        if (_editingBudgetId == row.Id) SetEditingBudget(null);
         Reload();
     }
 
@@ -223,7 +250,9 @@ public partial class MainViewModel
             MessageBox.Show("Lo ahorrado hasta ahora no es válido.", "Meta");
             return;
         }
-        if (NewGoalDate.Date <= DateTime.Today)
+        // la fecha tiene que ser futura; salvo al editar una meta cuya fecha no se tocó (puede estar vencida)
+        var dateUnchanged = IsEditingGoal && NewGoalDate.Date == _editingGoalDate.Date;
+        if (NewGoalDate.Date <= DateTime.Today && !dateUnchanged)
         {
             MessageBox.Show("La fecha objetivo tiene que ser futura.", "Meta");
             return;
@@ -231,21 +260,36 @@ public partial class MainViewModel
 
         using (var db = new AppDbContext())
         {
-            db.Goals.Add(new SavingsGoal
+            if (_editingGoalId is { } id)
             {
-                Name = NewGoalName.Trim(),
-                Currency = NewGoalCurrency,
-                TargetAmount = target,
-                SavedAmount = saved,
-                TargetDate = NewGoalDate.Date
-            });
+                var existing = db.Goals.Find(id);
+                if (existing is null)
+                {
+                    InfoNotifier("Esa meta ya no existe.");
+                    ClearGoalForm();
+                    return;
+                }
+                existing.Name = NewGoalName.Trim();
+                existing.Currency = NewGoalCurrency;
+                existing.TargetAmount = target;
+                existing.SavedAmount = saved;
+                existing.TargetDate = NewGoalDate.Date;
+            }
+            else
+            {
+                db.Goals.Add(new SavingsGoal
+                {
+                    Name = NewGoalName.Trim(),
+                    Currency = NewGoalCurrency,
+                    TargetAmount = target,
+                    SavedAmount = saved,
+                    TargetDate = NewGoalDate.Date
+                });
+            }
             db.SaveChanges();
         }
 
-        NewGoalName = "";
-        NewGoalTarget = "";
-        NewGoalSaved = "0";
-        Reload();
+        ClearGoalForm();
     }
 
     private void DeleteGoal(GoalRow? row)
@@ -258,6 +302,7 @@ public partial class MainViewModel
         {
             db.Goals.Where(g => g.Id == row.Id).ExecuteDelete();
         }
+        if (_editingGoalId == row.Id) SetEditingGoal(null);
         Reload();
     }
 
