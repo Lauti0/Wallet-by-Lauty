@@ -1,0 +1,29 @@
+# Compilación
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.dll
+*.exe
+*.pdb
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userprefs
+
+# Datos personales: nunca deben subirse al repositorio
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.xlsx
+*.csv
+Backups/
+settings.json
+errores.log
+
+# Sistema
+Thumbs.db
+.DS_Store
