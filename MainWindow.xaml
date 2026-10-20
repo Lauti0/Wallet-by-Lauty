@@ -511,7 +511,18 @@
 
                 <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                     <StackPanel>
-                        <TextBlock Style="{StaticResource SectionTitle}" Text="Nuevo movimiento" Margin="0,0,0,12"/>
+                        <!-- "Nuevo movimiento" o "Editar movimiento" (en azul para que se note que se está editando) -->
+                        <TextBlock Text="{Binding TransactionFormTitle}" Margin="0,0,0,12">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource SectionTitle}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                            <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                         <WrapPanel>
                             <StackPanel Style="{StaticResource Field}">
                                 <TextBlock Style="{StaticResource FieldLabel}" Text="Tipo"/>
@@ -539,8 +550,23 @@
                                 <TextBlock Style="{StaticResource FieldLabel}" Text="Descripción (opcional)"/>
                                 <TextBox Width="200" MaxLength="200" Text="{Binding NewDescription, UpdateSourceTrigger=PropertyChanged}"/>
                             </StackPanel>
-                            <Button Content="＋ Agregar" Style="{StaticResource PrimaryButton}" VerticalAlignment="Bottom"
-                                    Margin="0,0,0,12" Command="{Binding AddTransactionCommand}"/>
+                            <Button Content="{Binding SaveTransactionText}" Style="{StaticResource PrimaryButton}"
+                                    VerticalAlignment="Bottom" Margin="0,0,0,12"
+                                    Command="{Binding SaveTransactionCommand}"/>
+                            <Button Content="Cancelar" Padding="16,6" VerticalAlignment="Bottom" Margin="8,0,0,12"
+                                    ToolTip="Descartar los cambios" Command="{Binding CancelEditCommand}">
+                                <Button.Style>
+                                    <!-- solo se ve mientras se está editando -->
+                                    <Style TargetType="Button" BasedOn="{StaticResource ConfirmButton}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsEditing}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
                         </WrapPanel>
                     </StackPanel>
                 </Border>
@@ -562,6 +588,17 @@
                                                     ElementStyle="{StaticResource CellText}"/>
                                 <DataGridTextColumn Header="Monto" Binding="{Binding AmountText}" Width="160"
                                                     ElementStyle="{StaticResource AmountByType}"/>
+                                <DataGridTemplateColumn Width="80">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="Editar" ToolTip="Modificar este movimiento"
+                                                    AutomationProperties.Name="Editar" Style="{StaticResource ConfirmButton}"
+                                                    Command="{Binding DataContext.EditTransactionCommand,
+                                                              RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTemplateColumn Width="50">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>

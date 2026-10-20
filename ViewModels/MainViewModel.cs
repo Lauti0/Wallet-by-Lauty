@@ -155,8 +155,16 @@ public partial class MainViewModel : ViewModelBase
     public RelayCommand AddRecurringCommand { get; }
     public RelayCommand DeleteRecurringCommand { get; }
     public RelayCommand ConfirmPendingCommand { get; }
-    public RelayCommand AddTransactionCommand { get; }
+    public RelayCommand SaveTransactionCommand { get; }
+    public RelayCommand EditTransactionCommand { get; }
+    public RelayCommand CancelEditCommand { get; }
     public RelayCommand DeleteTransactionCommand { get; }
+
+    // Edición: el formulario de movimientos sirve para agregar y para editar (guarda el Id que se edita).
+    private int? _editingId;
+    public bool IsEditing => _editingId is not null;
+    public string TransactionFormTitle => IsEditing ? "Editar movimiento" : "Nuevo movimiento";
+    public string SaveTransactionText => IsEditing ? "Guardar cambios" : "＋ Agregar";
     public RelayCommand AddAccountCommand { get; }
     public RelayCommand PreviousMonthCommand { get; }
     public RelayCommand NextMonthCommand { get; }
@@ -166,7 +174,9 @@ public partial class MainViewModel : ViewModelBase
         AddRecurringCommand = new RelayCommand(_ => AddRecurring());
         DeleteRecurringCommand = new RelayCommand(p => DeleteRecurring(p as RecurringRow));
         ConfirmPendingCommand = new RelayCommand(p => ConfirmPending(p as PendingRow));
-        AddTransactionCommand = new RelayCommand(_ => AddTransaction());
+        SaveTransactionCommand = new RelayCommand(_ => SaveTransaction());
+        EditTransactionCommand = new RelayCommand(p => EditTransaction(p as TransactionRow));
+        CancelEditCommand = new RelayCommand(_ => ClearTransactionForm());
         DeleteTransactionCommand = new RelayCommand(p => DeleteTransaction(p as TransactionRow));
         AddAccountCommand = new RelayCommand(_ => AddAccount());
         PreviousMonthCommand = new RelayCommand(_ => ChangeMonth(-1));
@@ -401,7 +411,8 @@ public partial class MainViewModel : ViewModelBase
          || decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out value))
         && Math.Abs(value) <= MaxAmount;
 
-    private void AddTransaction()
+    // Agrega un movimiento nuevo o, si se está editando uno, actualiza el existente.
+    private void SaveTransaction()
     {
         if (!TryParseAmount(NewAmount, out var amount) || amount <= 0)
         {
@@ -416,21 +427,87 @@ public partial class MainViewModel : ViewModelBase
 
         using (var db = new AppDbContext())
         {
-            db.Transactions.Add(new FinanceTransaction
+            if (_editingId is { } id)
             {
-                Date = NewDate.Date,
-                Amount = amount,
-                Type = NewType,
-                Description = NewDescription.Trim(),
-                AccountId = NewAccount.Id,
-                CategoryId = NewCategory.Id
-            });
+                var existing = db.Transactions.Find(id);
+                if (existing is null)
+                {
+                    // se borró mientras se editaba
+                    MessageBox.Show("Ese movimiento ya no existe.", "Movimiento");
+                    ClearTransactionForm();
+                    return;
+                }
+                existing.Date = NewDate.Date;
+                existing.Amount = amount;
+                existing.Type = NewType;
+                existing.Description = NewDescription.Trim();
+                existing.AccountId = NewAccount.Id;
+                existing.CategoryId = NewCategory.Id;
+            }
+            else
+            {
+                db.Transactions.Add(new FinanceTransaction
+                {
+                    Date = NewDate.Date,
+                    Amount = amount,
+                    Type = NewType,
+                    Description = NewDescription.Trim(),
+                    AccountId = NewAccount.Id,
+                    CategoryId = NewCategory.Id
+                });
+            }
             db.SaveChanges();
         }
 
+        // se muestra el mes donde quedó el movimiento, para que se vea lo que se acaba de guardar
+        var savedMonth = new DateTime(NewDate.Year, NewDate.Month, 1);
+        if (savedMonth != _month)
+        {
+            _month = savedMonth;
+            Raise(nameof(MonthTitle));
+        }
+
+        ClearTransactionForm();
+    }
+
+    // Carga el movimiento en el formulario para modificarlo.
+    private void EditTransaction(TransactionRow? row)
+    {
+        if (row is null) return;
+
+        FinanceTransaction? t;
+        using (var db = new AppDbContext())
+            t = db.Transactions.AsNoTracking().FirstOrDefault(x => x.Id == row.Id);
+        if (t is null)
+        {
+            Reload();
+            return;
+        }
+
+        SetEditing(t.Id);
+        NewType = t.Type; // al cambiar el tipo se recarga la lista de categorías
+        NewCategory = FilteredCategories.FirstOrDefault(c => c.Id == t.CategoryId);
+        NewAccount = Accounts.FirstOrDefault(a => a.Id == t.AccountId);
+        NewDate = t.Date;
+        NewAmount = t.Amount.ToString("0.00", new CultureInfo("es-AR"));
+        NewDescription = t.Description;
+    }
+
+    // Vacía el formulario y sale del modo edición.
+    private void ClearTransactionForm()
+    {
         NewAmount = "";
         NewDescription = "";
+        SetEditing(null);
         Reload();
+    }
+
+    private void SetEditing(int? id)
+    {
+        _editingId = id;
+        Raise(nameof(IsEditing));
+        Raise(nameof(TransactionFormTitle));
+        Raise(nameof(SaveTransactionText));
     }
 
     private void DeleteTransaction(TransactionRow? row)
@@ -443,6 +520,9 @@ public partial class MainViewModel : ViewModelBase
         {
             db.Transactions.Where(t => t.Id == row.Id).ExecuteDelete();
         }
+
+        // si justo se estaba editando ese movimiento, se sale del modo edición
+        if (_editingId == row.Id) SetEditing(null);
         Reload();
     }
 
