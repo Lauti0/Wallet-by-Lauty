@@ -104,6 +104,12 @@ public class AppDbContext : DbContext
             .AsEnumerable().First() > 0;
         if (!hasColumn)
             db.Database.ExecuteSqlRaw("""ALTER TABLE "Transactions" ADD COLUMN "RecurringId" INTEGER NULL""");
+
+        var rateHasSource = db.Database
+            .SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM pragma_table_info('Rates') WHERE name = 'Source'")
+            .AsEnumerable().First() > 0;
+        if (!rateHasSource)
+            db.Database.ExecuteSqlRaw("""ALTER TABLE "Rates" ADD COLUMN "Source" TEXT NULL""");
     }
 
     public static void Initialize()

@@ -4,13 +4,13 @@ App de escritorio para Windows que administra tus finanzas personales: cuánta p
 
 ## Qué hace
 
-- **Cuentas** en pesos (ARS) y dólares (USD), con saldo inicial y saldo actual.
+- **Cuentas** en pesos (ARS) y dólares (USD), con saldo inicial y saldo actual. Se pueden **eliminar**: antes avisa cuántos movimientos, transferencias y recurrentes se borran con la cuenta, guarda un respaldo automático (restaurable) y no deja borrar la última cuenta.
 - **Movimientos**: ingresos y gastos con categoría, fecha y descripción.
 - **Transferencias** entre cuentas, incluso de distinta moneda (queda guardada la cotización de la operación).
 - **Recurrentes** (alquiler, sueldo, suscripciones) y **proyección** del saldo a fin de mes, con cuánto podés gastar por día.
 - **Presupuestos** por categoría, con **alertas** cuando estás cerca del límite o lo superaste.
 - **Metas de ahorro** con cuánto hay que ahorrar por mes para llegar a tiempo.
-- **Cotización del dólar** cargada a mano y patrimonio total en pesos y en dólares.
+- **Cotización del dólar** cargada a mano o traída de internet (oficial, blue, MEP, CCL o tarjeta; compra o venta; opcionalmente una vez por día), y patrimonio total en pesos y en dólares. Cada cotización guarda de dónde salió.
 - **Panorama general** con totales históricos, promedios, gráficos mes a mes y en qué se gasta más.
 - **Exportar** todo a Excel (`.xlsx`, una hoja por tema) y los movimientos a CSV.
 - **Importar movimientos desde el CSV del banco**: un asistente detecta el formato (separador, codificación, fechas, números, columnas de débito y crédito) y muestra una vista previa antes de guardar. Omite los movimientos que ya existen, así que se puede importar el mismo extracto dos veces sin duplicar, y hace un respaldo antes de importar.
@@ -43,7 +43,7 @@ La variable de entorno `CHOLINANZAS_DB` permite usar otro archivo de base de dat
 
 ## Privacidad
 
-- Esta versión no se conecta a internet, no tiene cuentas de usuario y no envía información a nadie.
+- No tiene cuentas de usuario y no envía tus datos a nadie. La única conexión a internet es opcional: traer la cotización pública del dólar de dolarapi.com (botón "Actualizar ahora" o, si se activa, una vez por día al abrir). Es un GET sin datos personales; el servicio ve la dirección IP, como cualquier sitio web. Si falla, la app sigue con la última cotización cargada.
 - Los datos solo salen de la computadora si el usuario lo decide: al exportar un archivo o al elegir una carpeta extra para los respaldos.
 - Los datos **no están cifrados**. Quien comparta la computadora debería proteger su usuario de Windows con contraseña.
 - Si en el futuro se agregan funciones que usen la red (por ejemplo, bajar la cotización automáticamente), este apartado debe actualizarse y revisarse qué datos salen y con qué consentimiento.

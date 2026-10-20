@@ -12,7 +12,12 @@ public enum ThemeChoice { System, Light, Dark }
 /// </summary>
 public static class AppSettings
 {
-    private sealed record Data(string? ExtraBackupFolder = null, string Theme = nameof(ThemeChoice.System));
+    private sealed record Data(
+        string? ExtraBackupFolder = null,
+        string Theme = nameof(ThemeChoice.System),
+        bool AutoRate = false,          // traer la cotización de internet al abrir la app (desactivado por defecto)
+        string RateSource = "blue",     // oficial, blue, bolsa (MEP), contadoconliqui o tarjeta
+        string RatePrice = "venta");    // venta o compra
 
     private static string DataDir => Path.GetDirectoryName(AppDbContext.DbPath)!;
     private static string SettingsPath => Path.Combine(DataDir, "settings.json");
@@ -42,6 +47,24 @@ public static class AppSettings
     {
         get => Load().ExtraBackupFolder;
         set => Save(Load() with { ExtraBackupFolder = string.IsNullOrWhiteSpace(value) ? null : value });
+    }
+
+    public static bool AutoRate
+    {
+        get => Load().AutoRate;
+        set => Save(Load() with { AutoRate = value });
+    }
+
+    public static string RateSource
+    {
+        get => ExchangeRateService.Sources.Any(s => s.Key == Load().RateSource) ? Load().RateSource : "blue";
+        set => Save(Load() with { RateSource = value });
+    }
+
+    public static string RatePrice
+    {
+        get => Load().RatePrice is "compra" ? "compra" : "venta";
+        set => Save(Load() with { RatePrice = value });
     }
 
     public static ThemeChoice Theme

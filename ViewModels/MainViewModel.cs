@@ -198,6 +198,9 @@ public partial class MainViewModel : ViewModelBase
         NewBudgetCategory = ExpenseCategories.FirstOrDefault();
         Reload();
         RefreshBackups();
+
+        LoadRateSettings();
+        StartAutomaticRate();
     }
 
     private void RefreshFilteredCategories()

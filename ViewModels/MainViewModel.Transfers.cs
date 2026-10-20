@@ -71,7 +71,7 @@ public partial class MainViewModel
         _rate = latest?.ArsPerUsd;
         RateInfo = latest is null
             ? "Todavía no cargaste la cotización."
-            : $"Cotización actual: 1 USD = {Money.Format(latest.ArsPerUsd, Currency.ARS)} (cargada el {latest.Date:dd/MM/yyyy})";
+            : $"Cotización actual: 1 USD = {Money.Format(latest.ArsPerUsd, Currency.ARS)}  ·  {latest.Source ?? "manual"}, {latest.Date:dd/MM/yyyy}";
 
         NetWorth.Clear();
         if (_rate is null || _rate == 0)
@@ -110,7 +110,7 @@ public partial class MainViewModel
 
         using (var db = new AppDbContext())
         {
-            db.Rates.Add(new ExchangeRate { Date = DateTime.Today, ArsPerUsd = rate });
+            db.Rates.Add(new ExchangeRate { Date = DateTime.Today, ArsPerUsd = rate, Source = "Manual" });
             db.SaveChanges();
         }
 

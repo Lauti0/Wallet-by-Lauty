@@ -1269,6 +1269,17 @@
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
                                     </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Width="45">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="✕" ToolTip="Eliminar esta cuenta" AutomationProperties.Name="Eliminar cuenta"
+                                                        Style="{StaticResource RowButton}"
+                                                        Command="{Binding DataContext.DeleteAccountCommand,
+                                                                  RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </StackPanel>
@@ -1288,6 +1299,33 @@
                             <TextBlock Text="{Binding RateInfo}" FontWeight="SemiBold"/>
                             <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,0"
                                        Text="Se usa la última cargada para calcular tu patrimonio total y para sugerir conversiones en las transferencias."/>
+
+                            <Border BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0" Margin="0,14,0,0" Padding="0,14,0,0">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="Traer la cotización de internet (opcional)"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                        <StackPanel Style="{StaticResource Field}">
+                                            <TextBlock Style="{StaticResource FieldLabel}" Text="Dólar"/>
+                                            <ComboBox Width="200" ItemsSource="{Binding RateSources}" DisplayMemberPath="Label"
+                                                      SelectedItem="{Binding SelectedRateSource}"/>
+                                        </StackPanel>
+                                        <StackPanel Style="{StaticResource Field}">
+                                            <TextBlock Style="{StaticResource FieldLabel}" Text="Valor"/>
+                                            <ComboBox Width="120" ItemsSource="{Binding RatePrices}" DisplayMemberPath="Label"
+                                                      SelectedItem="{Binding SelectedRatePrice}"/>
+                                        </StackPanel>
+                                        <Button Content="Actualizar ahora" Style="{StaticResource ConfirmButton}" VerticalAlignment="Bottom"
+                                                Margin="0,0,0,12" Command="{Binding UpdateRateNowCommand}"
+                                                IsEnabled="{Binding CanUpdateRate}"/>
+                                    </StackPanel>
+                                    <CheckBox Content="Actualizar sola, una vez por día, al abrir la app"
+                                              IsChecked="{Binding AutoRateEnabled}"/>
+                                    <TextBlock Text="{Binding RateStatus}" Margin="0,8,0,0" TextWrapping="Wrap"
+                                               AutomationProperties.LiveSetting="Polite"/>
+                                    <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,0"
+                                               Text="Esto es lo único que usa internet: pide la cotización pública a dolarapi.com, sin enviar ninguno de tus datos. Si falla o no tenés conexión, la app sigue con la última cotización cargada."/>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
                     </Border>
 
@@ -1408,7 +1446,7 @@
                             <TextBlock Style="{StaticResource Hint}" FontSize="13" Margin="0,0,0,6"
                                        Text="• Tus datos se guardan solo en esta computadora, en tu carpeta de usuario de Windows (%LOCALAPPDATA%\CholinanzasApp)."/>
                             <TextBlock Style="{StaticResource Hint}" FontSize="13" Margin="0,0,0,6"
-                                       Text="• Esta versión de la app no se conecta a internet, no tiene cuentas de usuario y no envía información a nadie."/>
+                                       Text="• La app no tiene cuentas de usuario y no envía tus datos a nadie. Solo se conecta a internet si vos lo pedís, para traer la cotización pública del dólar (dolarapi.com): esa consulta no lleva ninguno de tus datos, aunque el servicio puede ver tu dirección IP como cualquier página web."/>
                             <TextBlock Style="{StaticResource Hint}" FontSize="13" Margin="0,0,0,6"
                                        Text="• Tus datos solo salen de acá si vos lo decidís: al exportar un archivo o al elegir una carpeta extra para los respaldos (por ejemplo, una carpeta de OneDrive)."/>
                             <TextBlock Style="{StaticResource Hint}" FontSize="13"

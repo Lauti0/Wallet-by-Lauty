@@ -69,6 +69,9 @@ public class ExchangeRate
     public int Id { get; set; }
     public DateTime Date { get; set; }
     public decimal ArsPerUsd { get; set; }
+
+    /// <summary>De dónde salió: "Manual" o, si se trajo de internet, por ejemplo "Blue (venta)". Null en las cargadas antes.</summary>
+    public string? Source { get; set; }
 }
 
 /// <summary>Límite mensual de gasto para una categoría en una moneda.</summary>

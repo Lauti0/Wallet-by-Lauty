@@ -1,5 +1,8 @@
+using System.IO;
+using System.Windows;
 using CholinanzasApp.Data;
 using CholinanzasApp.Models;
+using CholinanzasApp.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace CholinanzasApp.ViewModels;
@@ -43,7 +46,7 @@ public partial class MainViewModel
     public string SaveAccountText => IsEditingAccount ? "Guardar cambios" : "＋ Agregar";
 
     private RelayCommand? _editTransfer, _cancelTransfer, _editRecurring, _cancelRecurring, _editBudget, _cancelBudget,
-        _editGoal, _cancelGoal, _editAccount, _cancelAccount;
+        _editGoal, _cancelGoal, _editAccount, _cancelAccount, _deleteAccount;
 
     public RelayCommand EditTransferCommand => _editTransfer ??= new(p => EditTransfer(p as TransferRow));
     public RelayCommand CancelTransferEditCommand => _cancelTransfer ??= new(_ => ClearTransferForm());
@@ -54,6 +57,7 @@ public partial class MainViewModel
     public RelayCommand EditGoalCommand => _editGoal ??= new(p => EditGoal(p as GoalRow));
     public RelayCommand CancelGoalEditCommand => _cancelGoal ??= new(_ => ClearGoalForm());
     public RelayCommand EditAccountCommand => _editAccount ??= new(p => EditAccount(p as AccountRow));
+    public RelayCommand DeleteAccountCommand => _deleteAccount ??= new(p => DeleteAccount(p as AccountRow));
     public RelayCommand CancelAccountEditCommand => _cancelAccount ??= new(_ => ClearAccountForm());
 
     private static string Fmt(decimal value) => value.ToString("0.00", Ar);
@@ -245,6 +249,86 @@ public partial class MainViewModel
         NewAccountName = "";
         NewAccountInitial = "0";
         SetEditingAccount(null);
+        Reload();
+    }
+
+    /// <summary>Pregunta por una acción que borra datos; el "No" es el botón por defecto. Reemplazable para probar sin ventanas.</summary>
+    public Func<string, bool> ConfirmDangerous { get; set; } = text =>
+        MessageBox.Show(text, "Eliminar cuenta", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No)
+        == MessageBoxResult.Yes;
+
+    // Cuánto se pierde al borrar una cuenta: se muestra antes de confirmar.
+    private record AccountImpact(int Transactions, int Transfers, int Recurrings);
+
+    private static AccountImpact CountAccountImpact(AppDbContext db, int id) => new(
+        db.Transactions.Count(t => t.AccountId == id),
+        db.Transfers.Count(t => t.FromAccountId == id || t.ToAccountId == id),
+        db.Recurrings.Count(r => r.AccountId == id));
+
+    private static string Plural(int n, string one, string many) => n == 1 ? $"1 {one}" : $"{n} {many}";
+
+    public void DeleteAccount(AccountRow? row)
+    {
+        if (row is null) return;
+
+        AccountImpact impact;
+        using (var db = new AppDbContext())
+        {
+            if (!db.Accounts.Any(a => a.Id == row.Id)) { Reload(); return; }
+            if (db.Accounts.Count() <= 1)
+            {
+                InfoNotifier("No podés eliminar tu única cuenta: la app necesita al menos una para registrar movimientos.\n\n" +
+                             "Si querés, creá otra primero y después eliminá esta.");
+                return;
+            }
+            impact = CountAccountImpact(db, row.Id);
+        }
+
+        var lost = new List<string>();
+        if (impact.Transactions > 0) lost.Add(Plural(impact.Transactions, "movimiento", "movimientos"));
+        if (impact.Transfers > 0) lost.Add(Plural(impact.Transfers, "transferencia", "transferencias"));
+        if (impact.Recurrings > 0) lost.Add(Plural(impact.Recurrings, "movimiento recurrente", "movimientos recurrentes"));
+        var detail = lost.Count == 0
+            ? "La cuenta no tiene movimientos."
+            : "También se van a borrar para siempre: " + string.Join(", ", lost) + ". Tus totales históricos y los gráficos cambian.";
+
+        if (!ConfirmDangerous($"¿Eliminar la cuenta \"{row.Name}\" ({row.Currency})?\n\n{detail}\n\n" +
+                              "Antes de borrar, la app guarda un respaldo automático por si te arrepentís " +
+                              "(lo podés restaurar desde Respaldos)."))
+            return;
+
+        // Sin respaldo no se borra: es lo que hace reversible esta acción.
+        try
+        {
+            BackupService.CreateBackup();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException
+                                       or Microsoft.Data.Sqlite.SqliteException)
+        {
+            InfoNotifier("No se pudo guardar el respaldo previo, así que no se eliminó nada. Revisá que haya espacio en el disco.");
+            return;
+        }
+
+        using (var db = new AppDbContext())
+        using (var tx = db.Database.BeginTransaction())
+        {
+            // se borran los dependientes a mano: no dependemos de cascadas de la base
+            db.Transactions.Where(t => t.AccountId == row.Id).ExecuteDelete();
+            db.Transfers.Where(t => t.FromAccountId == row.Id || t.ToAccountId == row.Id).ExecuteDelete();
+            db.Recurrings.Where(r => r.AccountId == row.Id).ExecuteDelete();
+            db.Accounts.Where(a => a.Id == row.Id).ExecuteDelete();
+            tx.Commit();
+        }
+
+        if (_editingAccountId == row.Id) SetEditingAccount(null);
+        if (_editingId is not null || _editingTransferId is not null || _editingRecurringId is not null)
+        {
+            // lo que se estaba editando puede haber desaparecido con la cuenta
+            using var db = new AppDbContext();
+            if (_editingId is { } eid && !db.Transactions.Any(t => t.Id == eid)) SetEditing(null);
+            if (_editingTransferId is { } tid && !db.Transfers.Any(t => t.Id == tid)) SetEditingTransfer(null);
+            if (_editingRecurringId is { } rid && !db.Recurrings.Any(r => r.Id == rid)) SetEditingRecurring(null);
+        }
         Reload();
     }
 
