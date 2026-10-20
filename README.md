@@ -40,6 +40,7 @@ powershell -ExecutionPolicy Bypass -File installer\build.ps1
 
 Genera `installer\output\Cholinanzas-Setup-<versión>.exe` (unos 46 MB). La app va **autocontenida** (incluye .NET): quien la instala no necesita instalar nada más. Se instala solo para el usuario actual, sin pedir permisos de administrador, en `%LOCALAPPDATA%\Programs\Cholinanzas`; crea el acceso del menú Inicio (el del escritorio es opcional) y aparece en *Aplicaciones instaladas*. Instalar una versión nueva encima conserva todos los datos. Al desinstalar pregunta si querés borrar también tus datos (por defecto, no).
 
+- Para probarlo en una PC limpia, seguí [la guía de prueba](installer/GUIA-PRUEBA-EN-OTRA-PC.md).
 - La versión se cambia en `<Version>` de `CholinanzasApp.csproj`.
 - Si no tenés [Inno Setup 6](https://jrsoftware.org/isinfo.php), el script baja una copia portable del compilador a `%TEMP%` (no instala nada en Windows).
 - El instalador **no está firmado digitalmente**: Windows SmartScreen va a mostrar "Windows protegió su PC" hasta que se lo firme con un certificado de firma de código.
