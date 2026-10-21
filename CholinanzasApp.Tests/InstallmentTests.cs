@@ -203,8 +203,9 @@ public class InstallmentTests : DatabaseTest
     public void Si_el_usuario_borra_a_mano_el_gasto_de_una_cuota_no_se_vuelve_a_crear_y_queda_pendiente()
     {
         AddPlan(100m, 3, Today);
-        var (vm, _) = NewVm();
-        vm.DeleteTransactionCommand.Execute(vm.Transactions.Single());
+        _ = NewVm();                                         // al abrir se registra sola la cuota 1
+        using (var delete = new AppDbContext())              // el usuario borra ese gasto (directo en la base: el botón abre un cartel)
+            delete.Transactions.ExecuteDelete();
 
         var again = new MainViewModel();
 
