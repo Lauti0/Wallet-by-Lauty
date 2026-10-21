@@ -1,0 +1,39 @@
+name: Pruebas
+
+# Corre las pruebas automáticas en cada cambio que se sube a main y en cada pull request.
+# También se puede lanzar a mano desde la pestaña Actions de GitHub.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# El flujo solo necesita leer el código.
+permissions:
+  contents: read
+
+# Si se sube otro cambio mientras corre uno anterior, se cancela el viejo.
+concurrency:
+  group: pruebas-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pruebas:
+    # La app es WPF: solo compila y corre en Windows.
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      # Las acciones están fijadas a un commit exacto (no a una etiqueta, que se puede mover): así una acción
+      # comprometida no puede cambiar lo que se ejecuta. Para actualizarlas, cambiar el commit y el comentario.
+      - name: Bajar el código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Instalar .NET 10
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Correr las pruebas
+        run: dotnet test CholinanzasApp.Tests --configuration Release --verbosity normal

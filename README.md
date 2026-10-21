@@ -40,6 +40,8 @@ dotnet test CholinanzasApp.Tests
 
 Son unas 180 pruebas (xUnit) que cubren los cálculos de dinero (saldos, transferencias, proyección a fin de mes, presupuestos, metas), la importación de CSV y Excel (incluida la detección de duplicados y los archivos hostiles), la exportación (sin inyección de fórmulas), los respaldos, la cotización del dólar (contra un servidor local falso), las preferencias, el borrado de cuentas y los textos legales. **Nunca tocan tus datos reales**: cada ejecución usa una carpeta y una base temporales, que se borran al terminar. Conviene correrlas antes de generar cada instalador.
 
+**En GitHub** corren solas con cada cambio que se sube a `main` y con cada pull request (`.github\workflows\tests.yml`, en una máquina Windows); el resultado aparece en la pestaña *Actions* y como tilde o cruz junto a cada commit. Las acciones de GitHub que usa el flujo están fijadas a un commit exacto, no a una etiqueta.
+
 No cubren las pantallas (WPF): la apariencia, el recorrido de bienvenida y la ventana de términos se verifican a mano (ver `installer\GUIA-PRUEBA-EN-OTRA-PC.md`).
 
 ### Instalador
