@@ -38,4 +38,17 @@ public partial class MainViewModel
     }
 
     public void MarkWelcomeSeen() => AppSettings.WelcomeSeen = true;
+
+    // ───────────── Términos y avisos legales ─────────────
+
+    /// <summary>La ventana principal lo escucha para mostrar un texto legal: "terms" (términos y privacidad) o "notices" (terceros).</summary>
+    public event Action<string>? LegalRequested;
+
+    private RelayCommand? _showLegal;
+    public RelayCommand ShowLegalCommand => _showLegal ??= new(p => LegalRequested?.Invoke(p as string ?? "terms"));
+
+    /// <summary>Hay que pedir la aceptación si nunca se aceptó, o si desde entonces cambió el texto de los términos.</summary>
+    public bool NeedsTermsAcceptance() => AppSettings.TermsAcceptedVersion != LegalTexts.TermsVersion;
+
+    public void AcceptTerms() => AppSettings.AcceptTerms(LegalTexts.TermsVersion);
 }

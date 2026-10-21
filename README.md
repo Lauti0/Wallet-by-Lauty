@@ -101,6 +101,16 @@ Es una app local sin servidor ni puertos abiertos, por lo que los ataques de den
 - Importación de CSV y Excel con topes (archivo de hasta 10 MB, 50.000 filas, 50 columnas, textos recortados; un `.xlsx` que declara más de 100 MB descomprimido se rechaza), sin ejecutar nada del archivo (ni macros ni fórmulas) y todo o nada al guardar.
 - Copia de la base con la API nativa de SQLite y verificación de integridad antes de restaurar.
 
+## Aspectos legales (antes de vender)
+
+> **Nada de esto es asesoramiento legal.** Lo que sigue es el mecanismo técnico; los textos los tiene que revisar un abogado.
+
+- **Términos de uso y política de privacidad:** `Legal\Terminos.txt`. Hoy es un **BORRADOR** con datos `[entre corchetes]` por completar. Lo muestra el instalador (pantalla de licencia: «Siguiente» queda deshabilitado hasta marcar «Acepto el acuerdo») y la app al abrirse por primera vez (si no se acepta, la app se cierra sin hacer nada). Se pueden releer desde la pestaña *Ayuda*.
+- **Cambiar los términos:** editar `Legal\Terminos.txt` y actualizar la línea «Versión del texto» **y** `LegalTexts.TermsVersion` (deben coincidir). Con la versión nueva, la app vuelve a pedir la aceptación. La app guarda qué versión aceptó el usuario y cuándo (`settings.json`).
+- **Avisos de software de terceros:** `Legal\AVISOS-DE-TERCEROS.txt`, generado con `installer\generate-notices.ps1` (volver a correrlo al agregar o actualizar paquetes). Todas las librerías son MIT o Apache-2.0, que exigen incluir estos avisos al repartir la app. Se instalan junto al programa y se ven en *Ayuda*.
+- `installer\build.ps1` avisa mientras los términos sigan siendo un borrador: **no repartir ese instalador a clientes**.
+- Pendientes que no son de código: revisión de los textos por un abogado, términos de uso de dolarapi.com para uso comercial, registro del nombre «Cholinanzas» y firma del instalador.
+
 ## Estructura
 
 ```
@@ -113,6 +123,8 @@ ViewModels/            Lógica de pantalla (MainViewModel dividido en archivos p
 Services/              Respaldos, exportación e importación
 Data/, Models/         Base de datos (EF Core + SQLite) y modelos
 Assets/                Ícono de la app
+Legal/                 Términos y privacidad (borrador) y avisos de software de terceros
+LegalWindow.xaml(.cs)  Ventana que muestra los textos legales y pide aceptarlos
 installer/             Script del instalador (Inno Setup) y build.ps1
 ```
 

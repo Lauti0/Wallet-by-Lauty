@@ -2,6 +2,7 @@
 using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
+using CholinanzasApp.Services;
 using CholinanzasApp.ViewModels;
 
 namespace CholinanzasApp
@@ -32,11 +33,43 @@ namespace CholinanzasApp
             {
                 LabelFormFields(this);
 
-                // Loaded puede dispararse más de una vez: el recorrido inicial se revisa una sola vez
+                // Loaded puede dispararse más de una vez: lo inicial (términos y recorrido) se revisa una sola vez
                 if (_welcomeChecked) return;
                 _welcomeChecked = true;
+
+                // sin aceptar los términos no se usa la aplicación: si los rechaza, se cierra sin tocar nada
+                if (!EnsureTermsAccepted(viewModel))
+                {
+                    Close();
+                    return;
+                }
                 if (viewModel.ShouldShowWelcome()) ShowWelcome(viewModel);
             };
+
+            viewModel.LegalRequested += kind => ShowLegal(kind);
+        }
+
+        // Pide aceptar los términos la primera vez, y de nuevo si cambió su texto.
+        private bool EnsureTermsAccepted(MainViewModel viewModel)
+        {
+            if (!viewModel.NeedsTermsAcceptance()) return true;
+
+            var window = new LegalWindow("Términos de uso y política de privacidad", LegalTexts.Terms(), requireAcceptance: true,
+                intro: "Leé estos términos y aceptalos para usar Cholinanzas. Si no los aceptás, la aplicación se cierra.")
+            { Owner = this };
+            if (window.ShowDialog() != true) return false;
+
+            viewModel.AcceptTerms();
+            return true;
+        }
+
+        // Botones de la pestaña Ayuda: los textos se pueden volver a leer cuando se quiera.
+        private void ShowLegal(string kind)
+        {
+            var (title, body) = kind == "notices"
+                ? ("Avisos de software de terceros", LegalTexts.ThirdPartyNotices())
+                : ("Términos de uso y política de privacidad", LegalTexts.Terms());
+            new LegalWindow(title, body, requireAcceptance: false) { Owner = this }.ShowDialog();
         }
 
         private bool _welcomeChecked, _welcomeOpen;

@@ -20,6 +20,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- los textos legales viajan dentro del .exe: la pantalla de aceptación y la pestaña Ayuda los leen de acá -->
+    <EmbeddedResource Include="Legal\Terminos.txt" LogicalName="Terminos.txt" />
+    <EmbeddedResource Include="Legal\AVISOS-DE-TERCEROS.txt" LogicalName="AvisosDeTerceros.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.13" />
   </ItemGroup>

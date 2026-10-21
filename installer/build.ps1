@@ -1,4 +1,4 @@
-<#
+﻿<#
   Genera el instalador de Cholinanzas: installer\output\Cholinanzas-Setup-<versión>.exe
 
   Uso (desde cualquier carpeta):   powershell -ExecutionPolicy Bypass -File installer\build.ps1
@@ -46,6 +46,15 @@ function Find-Iscc {
     }
     Expand-Archive $pkg -DestinationPath (Join-Path $cache 'pkg') -Force
     return (Join-Path $cache 'pkg\tools\ISCC.exe')
+}
+
+# Los términos son un borrador hasta que los revise un abogado: se avisa para no repartir un instalador con el borrador.
+$terms = Get-Content (Join-Path $root 'Legal\Terminos.txt') -Raw
+if ($terms -match 'BORRADOR|\[[A-ZÁÉÍÓÚÑ][^\]]*\]') {
+    Write-Warning 'Legal\Terminos.txt todavía es un BORRADOR o tiene datos [entre corchetes] sin completar. NO repartas este instalador a clientes.'
+}
+if (-not (Test-Path (Join-Path $root 'Legal\AVISOS-DE-TERCEROS.txt'))) {
+    throw 'Falta Legal\AVISOS-DE-TERCEROS.txt: generalo con installer\generate-notices.ps1'
 }
 
 Write-Host "== Publicando Cholinanzas $version (autocontenida, win-x64) =="

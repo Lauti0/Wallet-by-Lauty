@@ -1,0 +1,71 @@
+﻿TÉRMINOS DE USO Y POLÍTICA DE PRIVACIDAD DE CHOLINANZAS
+Versión del texto: 2026-10-20
+
+*** BORRADOR: este texto todavía NO fue revisado por un abogado. No debe usarse para vender la aplicación hasta que ===
+*** lo revise un profesional. Hay que completar los datos que están entre [corchetes] y borrar este aviso.       ===
+
+
+1. QUIÉN OFRECE LA APLICACIÓN
+Cholinanzas es ofrecida por [NOMBRE COMPLETO O RAZÓN SOCIAL], CUIT [NÚMERO], con domicilio en [DOMICILIO].
+Contacto: [CORREO ELECTRÓNICO DE CONTACTO].
+
+2. QUÉ ES CHOLINANZAS
+Es una aplicación de escritorio para Windows que sirve para organizar las finanzas personales: cuentas, ingresos,
+gastos, presupuestos, metas de ahorro y proyecciones. Funciona en tu computadora.
+
+3. ACEPTACIÓN
+Al instalar o usar la aplicación aceptás estos términos. Si no estás de acuerdo, no la instales ni la uses, y
+desinstalala si ya la instalaste. Si estos términos cambian, la aplicación te va a pedir que aceptes la nueva versión.
+
+4. LICENCIA DE USO
+Se te otorga una licencia personal, no exclusiva e intransferible para usar la aplicación en [CANTIDAD DE
+COMPUTADORAS] computadora(s) de tu uso. No podés copiarla para venderla o repartirla, ni sublicenciarla, ni intentar
+obtener su código fuente, salvo en lo que la ley permita expresamente. La aplicación sigue siendo propiedad de su
+titular. [CONDICIONES DE PRECIO, PAGO Y DEVOLUCIÓN: completar.]
+
+5. LO QUE CHOLINANZAS NO ES
+Cholinanzas no brinda asesoramiento financiero, contable, impositivo, legal ni de inversión. Los cálculos que muestra
+(por ejemplo, la proyección a fin de mes, «Podés gastar por día» o «Necesitás ahorrar por mes») son orientativos y
+dependen únicamente de los datos que vos cargues. Las decisiones que tomes son tu responsabilidad.
+
+6. TUS DATOS Y PRIVACIDAD
+- Tus datos (cuentas, movimientos, presupuestos, metas) se guardan solamente en tu computadora, en la carpeta de tu
+  usuario de Windows (%LOCALAPPDATA%\CholinanzasApp). La aplicación no tiene cuentas de usuario ni registro.
+- El titular de la aplicación no recibe, no ve ni almacena tus datos.
+- La aplicación se conecta a internet únicamente cuando vos lo pedís, o si activás la opción correspondiente, para
+  traer la cotización pública del dólar de dolarapi.com. Esa consulta no incluye ninguno de tus datos, aunque el
+  servicio puede ver tu dirección IP, como cualquier sitio web.
+- Tus datos solo salen de tu computadora si vos lo decidís: al exportar un archivo, o al elegir una carpeta extra para
+  los respaldos (por ejemplo, una carpeta de OneDrive o de Google Drive). En ese caso rigen también las condiciones del
+  servicio que elijas.
+- Los datos y los respaldos no están cifrados. Si compartís tu computadora, protegé tu usuario de Windows con una
+  contraseña.
+- Para borrar tus datos, desinstalá la aplicación y elegí borrar también los datos cuando te lo pregunte, o borrá
+  la carpeta indicada arriba y las copias que hayas hecho.
+- [A REVISAR CON UN ABOGADO: si en el futuro se reciben datos personales (por ejemplo, para cobrar, entregar licencias o
+  dar soporte), hay que agregar acá qué datos se tratan, para qué, por cuánto tiempo y cómo se ejercen los derechos de
+  acceso, rectificación y supresión, según la normativa de protección de datos personales aplicable.]
+
+7. RESPALDOS
+La aplicación hace un respaldo automático por día en tu computadora. Sos responsable de mantener además copias en un
+lugar seguro. No se garantiza que no puedas perder datos por una falla de tu disco, de tu computadora o por un error.
+
+8. SERVICIOS DE TERCEROS
+La cotización del dólar proviene de un servicio público de terceros. No se garantiza su exactitud, actualización ni
+disponibilidad. Verificá el valor antes de tomar decisiones.
+
+9. GARANTÍA Y RESPONSABILIDAD
+[A REDACTAR CON UN ABOGADO.] La aplicación se ofrece «tal cual». En la medida en que la ley lo permita, el titular no
+responde por daños indirectos ni por pérdidas derivadas del uso de la aplicación o de la imposibilidad de usarla.
+Nada de lo dicho en estos términos limita los derechos que la ley reconoce a los consumidores y usuarios.
+
+10. SOFTWARE DE TERCEROS
+Cholinanzas incluye componentes de código abierto de terceros, que se usan bajo sus propias licencias. Podés ver la
+lista y los avisos en la pestaña «Ayuda» de la aplicación o en el archivo AVISOS-DE-TERCEROS.txt de la carpeta de
+instalación.
+
+11. LEY APLICABLE Y JURISDICCIÓN
+[LEY APLICABLE Y TRIBUNALES COMPETENTES: completar con un abogado.]
+
+12. CONTACTO
+Para consultas sobre estos términos o sobre la aplicación: [CORREO ELECTRÓNICO DE CONTACTO].

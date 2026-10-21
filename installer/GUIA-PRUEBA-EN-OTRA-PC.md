@@ -71,7 +71,7 @@ Si te lista versiones de .NET, la prueba sirve menos. Probalo igual, pero mejor 
 2. **Si aparece "Windows protegió su PC"** (pantalla azul de SmartScreen): es esperable, porque el instalador todavía no está firmado digitalmente. Tocá **Más información** y después **Ejecutar de todas formas**.
    - Si pasaste el archivo por USB puede que no aparezca. Si lo bajaste de internet o de una nube, sí.
 3. **Puede preguntar si instalar "solo para mí" o "para todos los usuarios".** Elegí **solo para mí**: no pide contraseña de administrador y es lo normal para esta app. Si con esa opción igual pide la contraseña, anotalo: es un problema. (Anotá también si te resultó confusa la pregunta.)
-4. El asistente tiene que estar **en español**. Seguí los pasos:
+4. El asistente tiene que estar **en español**. La primera pantalla es el **acuerdo de licencia** (los términos de uso y privacidad): tiene que venir marcado «No acepto el acuerdo» y el botón «Siguiente» tiene que estar deshabilitado hasta que marques «Acepto el acuerdo». Probá avanzar sin aceptar. Después seguí los pasos:
    - Carpeta de instalación: por defecto `%LOCALAPPDATA%\Programs\Cholinanzas`.
    - Acceso directo en el escritorio: viene destildado (opcional).
    - Al terminar, dejá marcado **"Abrir Cholinanzas"**.
@@ -83,7 +83,8 @@ Si te lista versiones de .NET, la prueba sirve menos. Probalo igual, pero mejor 
 ## 4. Primer arranque
 
 - Se abre la ventana de Cholinanzas con el ícono azul con "$" en la barra de tareas.
-- Aparece el **recorrido de bienvenida** (3 pasos). Probá "Siguiente", "Anterior" y, en el último paso, **Ir a Cuentas**.
+- Primero aparece la pantalla **«Términos de uso y política de privacidad»** con los botones «Acepto» y «No acepto». Probá «No acepto»: la app tiene que cerrarse sin crear nada. Volvé a abrirla y elegí «Acepto»: ya no tiene que volver a pedirlo.
+- Después aparece el **recorrido de bienvenida** (3 pasos). Probá "Siguiente", "Anterior" y, en el último paso, **Ir a Cuentas**.
 - Si cerrás el recorrido y reabrís la app, **no** tiene que volver a aparecer. Para verlo de nuevo: pestaña **Ayuda → Ver el recorrido de bienvenida**.
 
 ---
@@ -121,7 +122,7 @@ Marcá cada punto. Es una prueba de humo: no hace falta revisar cada número, s�
 
 **Apariencia y ayuda**
 - [ ] En **Cuentas → Apariencia**, cambiar entre Claro, Oscuro y Según Windows.
-- [ ] Revisar que la pestaña **Ayuda** se lee bien.
+- [ ] Revisar que la pestaña **Ayuda** se lee bien, y que los botones **Términos y privacidad** y **Avisos de terceros** abren los textos.
 
 **Cerrar y reabrir**
 - [ ] Cerrar la app y volver a abrirla desde el menú Inicio: **los datos siguen ahí** y el recorrido no reaparece.

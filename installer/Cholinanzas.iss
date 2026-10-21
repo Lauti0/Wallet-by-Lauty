@@ -1,4 +1,4 @@
-; Instalador de Cholinanzas (Inno Setup 6). No se compila a mano: usar installer\build.ps1,
+﻿; Instalador de Cholinanzas (Inno Setup 6). No se compila a mano: usar installer\build.ps1,
 ; que publica la app y le pasa la versión y la carpeta de origen.
 
 #ifndef AppVersion
@@ -27,6 +27,8 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763
 SetupIconFile=..\Assets\icon.ico
+; Pantalla de licencia: hay que marcar "Acepto" para poder instalar. Es el mismo texto que la app muestra al abrirla.
+LicenseFile=..\Legal\Terminos.txt
 UninstallDisplayIcon={app}\{#AppExe}
 UninstallDisplayName={#AppName}
 OutputDir=output
@@ -47,6 +49,9 @@ Name: "desktopicon"; Description: "Crear un acceso directo en el escritorio"; Gr
 
 [Files]
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; los textos legales también quedan como archivos en la carpeta de instalación
+Source: "..\Legal\Terminos.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\Legal\AVISOS-DE-TERCEROS.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExe}"

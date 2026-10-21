@@ -18,7 +18,9 @@ public static class AppSettings
         bool AutoRate = false,          // traer la cotización de internet al abrir la app (desactivado por defecto)
         string RateSource = "blue",     // oficial, blue, bolsa (MEP), contadoconliqui o tarjeta
         string RatePrice = "venta",     // venta o compra
-        bool WelcomeSeen = false);      // ya se mostró el recorrido de bienvenida
+        bool WelcomeSeen = false,       // ya se mostró el recorrido de bienvenida
+        string TermsAccepted = "",      // versión de los términos que aceptó el usuario (LegalTexts.TermsVersion)
+        string TermsAcceptedAt = "");   // cuándo la aceptó (fecha y hora, ISO 8601)
 
     private static string DataDir => Path.GetDirectoryName(AppDbContext.DbPath)!;
     private static string SettingsPath => Path.Combine(DataDir, "settings.json");
@@ -67,6 +69,12 @@ public static class AppSettings
         get => Load().RatePrice is "compra" ? "compra" : "venta";
         set => Save(Load() with { RatePrice = value });
     }
+
+    public static string TermsAcceptedVersion => Load().TermsAccepted;
+
+    /// <summary>Guarda que el usuario aceptó esta versión de los términos, con la fecha y hora de la aceptación.</summary>
+    public static void AcceptTerms(string version) =>
+        Save(Load() with { TermsAccepted = version, TermsAcceptedAt = DateTime.Now.ToString("o") });
 
     public static bool WelcomeSeen
     {
