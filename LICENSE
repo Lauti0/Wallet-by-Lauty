@@ -1,0 +1,49 @@
+Cholinanzas - Licencia propietaria / Proprietary license
+
+Copyright (c) 2026 [NOMBRE COMPLETO DEL TITULAR]. Todos los derechos reservados.
+Copyright (c) 2026 [FULL NAME OF THE OWNER]. All rights reserved.
+
+ES
+--
+Este código fuente y los archivos que lo acompañan (el "Software") son propiedad
+de su titular. Que el repositorio sea visible públicamente NO otorga ninguna
+licencia de uso.
+
+Sin permiso previo y por escrito del titular, no está permitido copiar, modificar,
+fusionar, publicar, distribuir, sublicenciar, vender ni usar el Software, ni obras
+derivadas de él, en forma total o parcial, con fines comerciales o no comerciales.
+
+Se permite únicamente: (a) ver el código fuente en este repositorio y (b) usar la
+aplicación instalada con el instalador oficial, bajo los Términos de uso que se
+muestran al instalarla (Legal\Terminos.txt).
+
+EL SOFTWARE SE OFRECE "TAL CUAL", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O IMPLÍCITA,
+EN LA MEDIDA EN QUE LA LEY LO PERMITA.
+
+Componentes de terceros
+-----------------------
+El Software incluye librerías de terceros que se rigen por sus propias licencias
+(MIT y Apache-2.0). Sus avisos están en Legal\AVISOS-DE-TERCEROS.txt y en
+Legal\licenses\. Esta licencia no cambia los términos de esos componentes.
+
+EN
+--
+This source code and accompanying files (the "Software") are the property of the
+owner. Making the repository publicly visible does NOT grant any license to use it.
+
+Without the owner's prior written permission, you may not copy, modify, merge,
+publish, distribute, sublicense, sell or use the Software, or any derivative work,
+in whole or in part, for commercial or non-commercial purposes.
+
+Only the following is permitted: (a) viewing the source code in this repository,
+and (b) using the application installed with the official installer, under the
+Terms of Use shown during installation (Legal\Terminos.txt).
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+TO THE EXTENT PERMITTED BY LAW.
+
+Third-party components
+----------------------
+The Software includes third-party libraries governed by their own licenses (MIT and
+Apache-2.0). Their notices are in Legal\AVISOS-DE-TERCEROS.txt and Legal\licenses\.
+This license does not change the terms of those components.
