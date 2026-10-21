@@ -43,7 +43,8 @@ public record RecurringRow(int Id, string Description, string Type, string Categ
 }
 
 public record PendingRow(int RecurringId, DateTime Date, string Description, TransactionType Type,
-    int AccountId, int CategoryId, string Category, string Account, decimal SignedAmount, Currency Currency)
+    int AccountId, int CategoryId, string Category, string Account, decimal SignedAmount, Currency Currency,
+    int? InstallmentPlanId = null, int? InstallmentNumber = null)
 {
     public string AmountText => Money.Format(SignedAmount, Currency);
 }
@@ -236,6 +237,7 @@ public partial class MainViewModel : ViewModelBase
         // saldos por cuenta (decimal se agrega en memoria: SQLite no suma decimales)
         var selectedId = NewAccount?.Id;
         var selectedRecId = NewRecAccount?.Id;
+        var selectedInstId = NewInstAccount?.Id;
         var transferFromId = TransferFrom?.Id;
         var transferToId = TransferTo?.Id;
         var transfers = db.Transfers.AsNoTracking()
@@ -251,6 +253,8 @@ public partial class MainViewModel : ViewModelBase
         }
         NewAccount = Accounts.FirstOrDefault(a => a.Id == selectedId) ?? Accounts.FirstOrDefault();
         NewRecAccount = Accounts.FirstOrDefault(a => a.Id == selectedRecId) ?? Accounts.FirstOrDefault();
+        NewInstAccount = Accounts.FirstOrDefault(a => a.Id == selectedInstId) ?? Accounts.FirstOrDefault();
+        NewInstCategory ??= ExpenseCategories.FirstOrDefault();
 
         ReloadRecurring(db, all);
 
@@ -304,6 +308,8 @@ public partial class MainViewModel : ViewModelBase
             Recurrings.Add(new RecurringRow(r.Id, r.Description, r.Type.ToString(), r.Category.Name,
                 r.Account.Name, r.Account.Currency, r.Amount, r.DayOfMonth));
 
+        var installmentPending = ReloadInstallments(db, all);
+
         Pending.Clear();
         Projection.Clear();
 
@@ -325,6 +331,9 @@ public partial class MainViewModel : ViewModelBase
                     r.Type == TransactionType.Ingreso ? r.Amount : -r.Amount, r.Account.Currency));
             }
         }
+        // las cuotas vencidas sin registrar también cuentan: es plata que todavía se debe
+        var endOfMonth = _month.AddMonths(1);
+        pending.AddRange(installmentPending.Where(p => p.Date < endOfMonth));
         foreach (var p in pending.OrderBy(p => p.Date)) Pending.Add(p);
 
         // solo el mes en curso tiene "días restantes"
@@ -428,7 +437,9 @@ public partial class MainViewModel : ViewModelBase
                 Description = row.Description,
                 AccountId = row.AccountId,
                 CategoryId = row.CategoryId,
-                RecurringId = row.RecurringId
+                RecurringId = row.InstallmentPlanId is null ? row.RecurringId : null,
+                InstallmentPlanId = row.InstallmentPlanId,
+                InstallmentNumber = row.InstallmentNumber
             });
             db.SaveChanges();
         }
@@ -601,10 +612,11 @@ public partial class MainViewModel : ViewModelBase
                 // cambiar la moneda de una cuenta con movimientos dejaría todos sus montos sin sentido
                 var inUse = db.Transactions.Any(t => t.AccountId == id)
                             || db.Transfers.Any(t => t.FromAccountId == id || t.ToAccountId == id)
-                            || db.Recurrings.Any(r => r.AccountId == id);
+                            || db.Recurrings.Any(r => r.AccountId == id)
+                            || db.Installments.Any(p => p.AccountId == id);
                 if (existing.Currency != NewAccountCurrency && inUse)
                 {
-                    InfoNotifier("No se puede cambiar la moneda de una cuenta que ya tiene movimientos, transferencias o recurrentes. " +
+                    InfoNotifier("No se puede cambiar la moneda de una cuenta que ya tiene movimientos, transferencias, recurrentes o cuotas. " +
                                  "Podés crear una cuenta nueva en la otra moneda.");
                     return;
                 }

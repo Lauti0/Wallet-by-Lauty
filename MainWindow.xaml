@@ -483,7 +483,7 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <TextBlock Style="{StaticResource Hint}" Margin="0,-6,0,0"
-                               Text="Se calcula con tus movimientos recurrentes que todavía no registraste. 'Por día' solo aplica al mes en curso."/>
+                               Text="Se calcula con tus movimientos recurrentes y cuotas que todavía no registraste. 'Por día' solo aplica al mes en curso."/>
 
                     <TextBlock Style="{StaticResource SectionTitle}" Text="¿En qué gastaste?" Margin="0,20,0,10"/>
                     <Border Style="{StaticResource Card}">
@@ -964,6 +964,110 @@
             </ScrollViewer>
         </TabItem>
 
+        <!-- ═══════════════ CUOTAS ═══════════════ -->
+        <TabItem Header="💳  Cuotas" Tag="Compras en cuotas">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="32,0,16,24">
+
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource EditableTitle}" Tag="{Binding IsEditingInstallment}"
+                                       Text="{Binding InstallmentFormTitle}" Margin="0,0,0,2"/>
+                            <TextBlock Style="{StaticResource Hint}" Margin="0,0,0,12"
+                                       Text="Para compras con tarjeta de crédito en cuotas. Cada cuota se cobra en el resumen de la tarjeta: cargá la fecha de la primera."/>
+                            <WrapPanel>
+                                <StackPanel Style="{StaticResource Field}">
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="Qué compraste"/>
+                                    <TextBox Width="180" MaxLength="200" Text="{Binding NewInstDescription, UpdateSourceTrigger=PropertyChanged}"
+                                             ToolTip="Ej: Notebook, Heladera"/>
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Field}">
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="Valor de cada cuota"/>
+                                    <TextBox Width="130" Text="{Binding NewInstAmount, UpdateSourceTrigger=PropertyChanged}"/>
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Field}">
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="Cantidad de cuotas"/>
+                                    <TextBox Width="90" Text="{Binding NewInstCount, UpdateSourceTrigger=PropertyChanged}"/>
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Field}">
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="Fecha de la 1ª cuota"/>
+                                    <DatePicker Width="140" SelectedDate="{Binding NewInstFirstDate}"/>
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Field}">
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="Ya pagadas"/>
+                                    <TextBox Width="80" Text="{Binding NewInstPaidBefore, UpdateSourceTrigger=PropertyChanged}"
+                                             ToolTip="Cuántas cuotas ya pagaste antes de cargar la compra en la app"/>
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Field}">
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="Cuenta (la tarjeta)"/>
+                                    <ComboBox Width="160" ItemsSource="{Binding Accounts}" DisplayMemberPath="Name"
+                                              SelectedItem="{Binding NewInstAccount}"/>
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Field}">
+                                    <TextBlock Style="{StaticResource FieldLabel}" Text="Categoría"/>
+                                    <ComboBox Width="160" ItemsSource="{Binding ExpenseCategories}" DisplayMemberPath="Name"
+                                              SelectedItem="{Binding NewInstCategory}"/>
+                                </StackPanel>
+                                <Button Content="{Binding SaveInstallmentText}" Style="{StaticResource PrimaryButton}" VerticalAlignment="Bottom"
+                                        Margin="0,0,0,12" Command="{Binding AddInstallmentCommand}"/>
+                                <Button Content="Cancelar" Tag="{Binding IsEditingInstallment}" Style="{StaticResource CancelEditButton}"
+                                        Command="{Binding CancelInstallmentEditCommand}"/>
+                            </WrapPanel>
+                            <TextBlock Style="{StaticResource Hint}" Text="{Binding NewInstTotalHint}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SectionTitle}" Text="Mis compras en cuotas" Margin="0,0,0,2"/>
+                            <TextBlock Style="{StaticResource Hint}" Margin="0,0,0,8"
+                                       Text="Las cuotas que faltan aparecen en Recurrentes → Pendientes de registrar y cuentan en la proyección del mes. Cuando se cobren, apretá Registrar."/>
+                            <DataGrid Style="{StaticResource TableGrid}" ItemsSource="{Binding Installments}" MaxHeight="360"
+                                      AutomationProperties.Name="Compras en cuotas">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Compra" Binding="{Binding Description}" Width="*"
+                                                        ElementStyle="{StaticResource CellText}"/>
+                                    <DataGridTextColumn Header="Avance" Binding="{Binding ProgressText}" Width="140"
+                                                        ElementStyle="{StaticResource CellText}"/>
+                                    <DataGridTextColumn Header="Próxima" Binding="{Binding NextText}" Width="100"
+                                                        ElementStyle="{StaticResource CellText}"/>
+                                    <DataGridTextColumn Header="Cuota" Binding="{Binding AmountText}" Width="140"
+                                                        ElementStyle="{StaticResource CellText}"/>
+                                    <DataGridTextColumn Header="Falta pagar" Binding="{Binding RemainingText}" Width="150"
+                                                        ElementStyle="{StaticResource CellText}"/>
+                                    <DataGridTextColumn Header="Cuenta" Binding="{Binding Account}" Width="130"
+                                                        ElementStyle="{StaticResource CellText}"/>
+                                    <DataGridTemplateColumn Width="70">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="Editar" ToolTip="Modificar esta compra en cuotas"
+                                                        AutomationProperties.Name="Editar" Style="{StaticResource ConfirmButton}"
+                                                        Command="{Binding DataContext.EditInstallmentCommand,
+                                                                  RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Width="50">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="✕" ToolTip="Eliminar" AutomationProperties.Name="Eliminar" Style="{StaticResource RowButton}"
+                                                        Command="{Binding DataContext.DeleteInstallmentCommand,
+                                                                  RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"/>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <TextBlock Style="{StaticResource EmptyState}" Tag="{Binding Installments.Count}"
+                                       Text="Todavía no cargaste ninguna compra en cuotas."/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+
         <!-- ═══════════════ PRESUPUESTOS ═══════════════ -->
         <TabItem Header="🎯  Presupuestos" Tag="Presupuestos">
             <Grid Margin="32,0,32,24">
@@ -1337,13 +1441,13 @@
                             <StackPanel Orientation="Horizontal">
                                 <Button Content="Exportar todo a Excel" Style="{StaticResource PrimaryButton}"
                                         Command="{Binding ExportExcelCommand}"
-                                        ToolTip="Un archivo .xlsx con una hoja por tema: movimientos, transferencias, cuentas, mes a mes, categorías, presupuestos, metas y recurrentes"/>
+                                        ToolTip="Un archivo .xlsx con una hoja por tema: movimientos, transferencias, cuentas, mes a mes, categorías, presupuestos, metas, recurrentes y cuotas"/>
                                 <Button Content="Movimientos a CSV" Style="{StaticResource PrimaryButton}" Margin="12,0,0,0"
                                         Command="{Binding ExportCsvCommand}"
                                         ToolTip="Solo los movimientos, en un archivo de texto que abre Excel"/>
                             </StackPanel>
                             <TextBlock Style="{StaticResource Hint}" Margin="0,12,0,0"
-                                       Text="El Excel incluye una hoja por tema (movimientos, transferencias, cuentas, mes a mes, categorías, presupuestos, metas y recurrentes). En los movimientos, los gastos van en negativo para que puedas sumar directo."/>
+                                       Text="El Excel incluye una hoja por tema (movimientos, transferencias, cuentas, mes a mes, categorías, presupuestos, metas, recurrentes y cuotas). En los movimientos, los gastos van en negativo para que puedas sumar directo."/>
                         </StackPanel>
                     </Border>
 
@@ -1527,6 +1631,10 @@
                             <TextBlock Style="{StaticResource HelpBody}">
                                 <Run FontWeight="SemiBold" Text="Los recurrentes no se cargan solos. "/>
                                 <Run Text="Cuando el alquiler o el sueldo se concreten, entrá a Recurrentes y apretá «Registrar»: ahí se crea el movimiento real. Hasta entonces aparecen como «pendientes» en la proyección."/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource HelpBody}">
+                                <Run FontWeight="SemiBold" Text="Las cuotas de la tarjeta tampoco se cargan solas. "/>
+                                <Run Text="Cargá la compra en la pestaña Cuotas y cada mes, cuando te llegue el resumen, andá a Recurrentes y apretá «Registrar» en la cuota que toca. Mientras tanto cuenta en la proyección."/>
                             </TextBlock>
                             <TextBlock Style="{StaticResource HelpBody}">
                                 <Run FontWeight="SemiBold" Text="Una transferencia no es un gasto ni un ingreso. "/>

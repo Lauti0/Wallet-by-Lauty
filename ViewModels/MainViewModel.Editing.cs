@@ -254,16 +254,17 @@ public partial class MainViewModel
 
     /// <summary>Pregunta por una acción que borra datos; el "No" es el botón por defecto. Reemplazable para probar sin ventanas.</summary>
     public Func<string, bool> ConfirmDangerous { get; set; } = text =>
-        MessageBox.Show(text, "Eliminar cuenta", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No)
+        MessageBox.Show(text, "Eliminar", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No)
         == MessageBoxResult.Yes;
 
     // Cuánto se pierde al borrar una cuenta: se muestra antes de confirmar.
-    private record AccountImpact(int Transactions, int Transfers, int Recurrings);
+    private record AccountImpact(int Transactions, int Transfers, int Recurrings, int Installments);
 
     private static AccountImpact CountAccountImpact(AppDbContext db, int id) => new(
         db.Transactions.Count(t => t.AccountId == id),
         db.Transfers.Count(t => t.FromAccountId == id || t.ToAccountId == id),
-        db.Recurrings.Count(r => r.AccountId == id));
+        db.Recurrings.Count(r => r.AccountId == id),
+        db.Installments.Count(p => p.AccountId == id));
 
     private static string Plural(int n, string one, string many) => n == 1 ? $"1 {one}" : $"{n} {many}";
 
@@ -288,6 +289,7 @@ public partial class MainViewModel
         if (impact.Transactions > 0) lost.Add(Plural(impact.Transactions, "movimiento", "movimientos"));
         if (impact.Transfers > 0) lost.Add(Plural(impact.Transfers, "transferencia", "transferencias"));
         if (impact.Recurrings > 0) lost.Add(Plural(impact.Recurrings, "movimiento recurrente", "movimientos recurrentes"));
+        if (impact.Installments > 0) lost.Add(Plural(impact.Installments, "compra en cuotas", "compras en cuotas"));
         var detail = lost.Count == 0
             ? "La cuenta no tiene movimientos."
             : "También se van a borrar para siempre: " + string.Join(", ", lost) + ". Tus totales históricos y los gráficos cambian.";
@@ -316,18 +318,21 @@ public partial class MainViewModel
             db.Transactions.Where(t => t.AccountId == row.Id).ExecuteDelete();
             db.Transfers.Where(t => t.FromAccountId == row.Id || t.ToAccountId == row.Id).ExecuteDelete();
             db.Recurrings.Where(r => r.AccountId == row.Id).ExecuteDelete();
+            db.Installments.Where(p => p.AccountId == row.Id).ExecuteDelete();
             db.Accounts.Where(a => a.Id == row.Id).ExecuteDelete();
             tx.Commit();
         }
 
         if (_editingAccountId == row.Id) SetEditingAccount(null);
-        if (_editingId is not null || _editingTransferId is not null || _editingRecurringId is not null)
+        if (_editingId is not null || _editingTransferId is not null || _editingRecurringId is not null
+            || _editingInstallmentId is not null)
         {
             // lo que se estaba editando puede haber desaparecido con la cuenta
             using var db = new AppDbContext();
             if (_editingId is { } eid && !db.Transactions.Any(t => t.Id == eid)) SetEditing(null);
             if (_editingTransferId is { } tid && !db.Transfers.Any(t => t.Id == tid)) SetEditingTransfer(null);
             if (_editingRecurringId is { } rid && !db.Recurrings.Any(r => r.Id == rid)) SetEditingRecurring(null);
+            if (_editingInstallmentId is { } iid && !db.Installments.Any(p => p.Id == iid)) SetEditingInstallment(null);
         }
         Reload();
     }

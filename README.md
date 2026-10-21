@@ -8,6 +8,7 @@ App de escritorio para Windows que administra tus finanzas personales: cuánta p
 - **Movimientos**: ingresos y gastos con categoría, fecha y descripción.
 - **Transferencias** entre cuentas, incluso de distinta moneda (queda guardada la cotización de la operación).
 - **Recurrentes** (alquiler, sueldo, suscripciones) y **proyección** del saldo a fin de mes, con cuánto podés gastar por día.
+- **Compras en cuotas con tarjeta** (pestaña *Cuotas*): cargás qué compraste, el valor de la cuota, cuántas son, la fecha de la primera y cuántas ya pagaste. Muestra el avance ("4 de 12 pagadas"), lo que falta pagar y la próxima fecha. Las cuotas que faltan aparecen en *Recurrentes → Pendientes de registrar* y cuentan en la proyección del mes; cuando se cobran, *Registrar* crea el gasto y avanza el plan. Las cuotas vencidas sin registrar siguen pendientes. Editar un plan no toca las cuotas ya registradas.
 - **Presupuestos** por categoría, con **alertas** cuando estás cerca del límite o lo superaste.
 - **Metas de ahorro** con cuánto hay que ahorrar por mes para llegar a tiempo.
 - **Cotización del dólar** cargada a mano o traída de internet (oficial, blue, MEP, CCL o tarjeta; compra o venta; opcionalmente una vez por día), y patrimonio total en pesos y en dólares. Cada cotización guarda de dónde salió.
@@ -38,7 +39,7 @@ También se puede abrir `CholinanzasApp.slnx` con Visual Studio y ejecutar con F
 dotnet test CholinanzasApp.Tests
 ```
 
-Son unas 180 pruebas (xUnit) que cubren los cálculos de dinero (saldos, transferencias, proyección a fin de mes, presupuestos, metas), la importación de CSV y Excel (incluida la detección de duplicados y los archivos hostiles), la exportación (sin inyección de fórmulas), los respaldos, la cotización del dólar (contra un servidor local falso), las preferencias, el borrado de cuentas y los textos legales. **Nunca tocan tus datos reales**: cada ejecución usa una carpeta y una base temporales, que se borran al terminar. Conviene correrlas antes de generar cada instalador.
+Son unas 200 pruebas (xUnit) que cubren los cálculos de dinero (saldos, transferencias, proyección a fin de mes, presupuestos, metas), la importación de CSV y Excel (incluida la detección de duplicados y los archivos hostiles), la exportación (sin inyección de fórmulas), los respaldos, la cotización del dólar (contra un servidor local falso), las preferencias, el borrado de cuentas y los textos legales. **Nunca tocan tus datos reales**: cada ejecución usa una carpeta y una base temporales, que se borran al terminar. Conviene correrlas antes de generar cada instalador.
 
 **En GitHub** corren solas con cada cambio que se sube a `main` y con cada pull request (`.github\workflows\tests.yml`, en una máquina Windows); el resultado aparece en la pestaña *Actions* y como tilde o cruz junto a cada commit. Las acciones de GitHub que usa el flujo están fijadas a un commit exacto, no a una etiqueta.
 

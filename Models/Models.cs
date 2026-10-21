@@ -45,6 +45,10 @@ public class FinanceTransaction
 
     /// <summary>Si viene de un movimiento recurrente, su Id (para no proyectarlo dos veces).</summary>
     public int? RecurringId { get; set; }
+
+    /// <summary>Si es una cuota de una compra en cuotas, el Id del plan y el número de cuota (1 = la primera).</summary>
+    public int? InstallmentPlanId { get; set; }
+    public int? InstallmentNumber { get; set; }
 }
 
 /// <summary>Movimiento de plata entre dos cuentas propias; no cuenta como ingreso ni gasto.</summary>
@@ -102,6 +106,30 @@ public class RecurringTransaction
     public decimal Amount { get; set; }
     public TransactionType Type { get; set; }
     public int DayOfMonth { get; set; }
+
+    public int AccountId { get; set; }
+    public Account Account { get; set; } = null!;
+
+    public int CategoryId { get; set; }
+    public Category Category { get; set; } = null!;
+}
+
+/// <summary>
+/// Compra en cuotas (por ejemplo con tarjeta de crédito). Cada cuota se cobra un mes después de la anterior,
+/// a partir de FirstDate, y se registra como un gasto cuando se concreta.
+/// </summary>
+public class InstallmentPlan
+{
+    public int Id { get; set; }
+    public string Description { get; set; } = "";
+    public decimal InstallmentAmount { get; set; }
+    public int Count { get; set; }
+
+    /// <summary>Fecha en que se cobra la cuota 1 (en la tarjeta, la del vencimiento del resumen).</summary>
+    public DateTime FirstDate { get; set; }
+
+    /// <summary>Cuotas que ya estaban pagadas al cargar el plan (no se registran como movimientos).</summary>
+    public int PaidBefore { get; set; }
 
     public int AccountId { get; set; }
     public Account Account { get; set; } = null!;

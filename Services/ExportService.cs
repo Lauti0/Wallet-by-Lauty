@@ -30,6 +30,10 @@ public static class ExportService
         var goals = db.Goals.AsNoTracking().ToList().OrderBy(g => g.TargetDate).ToList();
         var recurrings = db.Recurrings.AsNoTracking().Include(r => r.Account).Include(r => r.Category)
             .ToList().OrderBy(r => r.DayOfMonth).ToList();
+        var installments = db.Installments.AsNoTracking().Include(p => p.Account).Include(p => p.Category)
+            .ToList().OrderBy(p => p.Description).ToList();
+        var paidNumbers = transactions.Where(t => t.InstallmentPlanId is not null && t.InstallmentNumber is not null)
+            .ToLookup(t => t.InstallmentPlanId!.Value, t => t.InstallmentNumber!.Value);
 
         using var workbook = new XLWorkbook();
         WriteMovements(workbook, transactions);
@@ -40,6 +44,7 @@ public static class ExportService
         WriteBudgets(workbook, budgets);
         WriteGoals(workbook, goals);
         WriteRecurrings(workbook, recurrings);
+        WriteInstallments(workbook, installments, paidNumbers);
         workbook.SaveAs(path);
     }
 
@@ -223,6 +228,27 @@ public static class ExportService
             sheet.Cell(row, 7).Value = r.Amount;
         }
         Finish(sheet, 7, row, moneyColumns: [7]);
+    }
+
+    private static void WriteInstallments(XLWorkbook workbook, List<InstallmentPlan> plans, ILookup<int, int> registered)
+    {
+        var sheet = NewSheet(workbook, "Cuotas",
+            "Descripción", "Categoría", "Cuenta", "Moneda", "Valor de la cuota", "Cuotas", "Pagadas", "Primera cuota", "Falta pagar");
+        var row = 1;
+        foreach (var p in plans)
+        {
+            row++;
+            sheet.Cell(row, 1).Value = p.Description;
+            sheet.Cell(row, 2).Value = p.Category.Name;
+            sheet.Cell(row, 3).Value = p.Account.Name;
+            sheet.Cell(row, 4).Value = p.Account.Currency.ToString();
+            sheet.Cell(row, 5).Value = p.InstallmentAmount;
+            sheet.Cell(row, 6).Value = p.Count;
+            sheet.Cell(row, 7).Value = InstallmentService.Paid(p, registered[p.Id]);
+            sheet.Cell(row, 8).Value = p.FirstDate;
+            sheet.Cell(row, 9).Value = InstallmentService.Remaining(p, registered[p.Id]);
+        }
+        Finish(sheet, 9, row, moneyColumns: [5, 9], dateColumns: [8]);
     }
 
     // ───────────── CSV ─────────────

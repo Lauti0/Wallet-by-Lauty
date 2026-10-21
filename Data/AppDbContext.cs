@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<FinanceTransaction> Transactions => Set<FinanceTransaction>();
     public DbSet<RecurringTransaction> Recurrings => Set<RecurringTransaction>();
+    public DbSet<InstallmentPlan> Installments => Set<InstallmentPlan>();
     public DbSet<CategoryRule> CategoryRules => Set<CategoryRule>();
     public DbSet<Transfer> Transfers => Set<Transfer>();
     public DbSet<ExchangeRate> Rates => Set<ExchangeRate>();
@@ -106,6 +107,33 @@ public class AppDbContext : DbContext
             .AsEnumerable().First() > 0;
         if (!hasColumn)
             db.Database.ExecuteSqlRaw("""ALTER TABLE "Transactions" ADD COLUMN "RecurringId" INTEGER NULL""");
+
+        db.Database.ExecuteSqlRaw("""
+            CREATE TABLE IF NOT EXISTS "Installments" (
+                "Id" INTEGER NOT NULL CONSTRAINT "PK_Installments" PRIMARY KEY AUTOINCREMENT,
+                "Description" TEXT NOT NULL,
+                "InstallmentAmount" TEXT NOT NULL,
+                "Count" INTEGER NOT NULL,
+                "FirstDate" TEXT NOT NULL,
+                "PaidBefore" INTEGER NOT NULL,
+                "AccountId" INTEGER NOT NULL,
+                "CategoryId" INTEGER NOT NULL,
+                CONSTRAINT "FK_Installments_Accounts_AccountId" FOREIGN KEY ("AccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE,
+                CONSTRAINT "FK_Installments_Categories_CategoryId" FOREIGN KEY ("CategoryId") REFERENCES "Categories" ("Id") ON DELETE CASCADE
+            );
+            """);
+
+        var hasPlanId = db.Database
+            .SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM pragma_table_info('Transactions') WHERE name = 'InstallmentPlanId'")
+            .AsEnumerable().First() > 0;
+        if (!hasPlanId)
+            db.Database.ExecuteSqlRaw("""ALTER TABLE "Transactions" ADD COLUMN "InstallmentPlanId" INTEGER NULL""");
+
+        var hasPlanNumber = db.Database
+            .SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM pragma_table_info('Transactions') WHERE name = 'InstallmentNumber'")
+            .AsEnumerable().First() > 0;
+        if (!hasPlanNumber)
+            db.Database.ExecuteSqlRaw("""ALTER TABLE "Transactions" ADD COLUMN "InstallmentNumber" INTEGER NULL""");
 
         var rateHasSource = db.Database
             .SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM pragma_table_info('Rates') WHERE name = 'Source'")
