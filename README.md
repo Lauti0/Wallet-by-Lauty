@@ -32,6 +32,16 @@ dotnet run
 
 También se puede abrir `CholinanzasApp.slnx` con Visual Studio y ejecutar con F5.
 
+### Pruebas automáticas
+
+```powershell
+dotnet test CholinanzasApp.Tests
+```
+
+Son unas 180 pruebas (xUnit) que cubren los cálculos de dinero (saldos, transferencias, proyección a fin de mes, presupuestos, metas), la importación de CSV y Excel (incluida la detección de duplicados y los archivos hostiles), la exportación (sin inyección de fórmulas), los respaldos, la cotización del dólar (contra un servidor local falso), las preferencias, el borrado de cuentas y los textos legales. **Nunca tocan tus datos reales**: cada ejecución usa una carpeta y una base temporales, que se borran al terminar. Conviene correrlas antes de generar cada instalador.
+
+No cubren las pantallas (WPF): la apariencia, el recorrido de bienvenida y la ventana de términos se verifican a mano (ver `installer\GUIA-PRUEBA-EN-OTRA-PC.md`).
+
 ### Instalador
 
 ```powershell
@@ -122,6 +132,7 @@ Themes/Styles.xaml     Paleta y estilos
 ViewModels/            Lógica de pantalla (MainViewModel dividido en archivos por tema)
 Services/              Respaldos, exportación e importación
 Data/, Models/         Base de datos (EF Core + SQLite) y modelos
+CholinanzasApp.Tests/  Pruebas automáticas (xUnit)
 Assets/                Ícono de la app
 Legal/                 Términos y privacidad (borrador) y avisos de software de terceros
 LegalWindow.xaml(.cs)  Ventana que muestra los textos legales y pide aceptarlos

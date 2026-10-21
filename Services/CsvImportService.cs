@@ -190,6 +190,19 @@ public static class CsvImportService
     /// </summary>
     public static (int Skip, bool HasHeader) GuessLayout(IReadOnlyList<string[]> rows)
     {
+        // 1) Lo más confiable: la tabla empieza en la primera fila que parece un movimiento (tiene una fecha y un monto) y
+        //    cuya siguiente también lo parece (o es la última). La fila de justo antes, si tiene al menos dos celdas con
+        //    texto, son los títulos de las columnas. No depende del largo de las filas: en un Excel las filas llegan hasta su
+        //    última celda con contenido, así que un gasto (sin crédito) es más corto que un ingreso.
+        for (var i = 0; i < rows.Count; i++)
+        {
+            if (!LooksLikeMovement(rows[i]) || (i + 1 < rows.Count && !LooksLikeMovement(rows[i + 1]))) continue;
+
+            var hasHeader = i > 0 && rows[i - 1].Count(c => c.Trim().Length > 0) >= 2;
+            return hasHeader ? (i - 1, true) : (i, false);
+        }
+
+        // 2) Sin filas que parezcan movimientos: se usa el largo más común de fila.
         var multi = rows.Where(r => r.Length >= 2).ToList();
         if (multi.Count == 0) return (0, false);
 
@@ -201,6 +214,17 @@ public static class CsvImportService
         var first = rows[skip];
         var looksLikeData = first.Any(c => TryParseDate(c, DateStyle.Auto, out _) || TryParseAmount(c, DecimalStyle.CommaDecimal, out _));
         return (skip, !looksLikeData);
+    }
+
+    // Una fila de movimiento tiene una celda que es una fecha y, en otra, un monto.
+    private static bool LooksLikeMovement(string[] row)
+    {
+        var cells = row.Select(c => c.Trim()).ToList();
+        var dateIndex = cells.FindIndex(c => TryParseDate(c, DateStyle.Auto, out _));
+        if (dateIndex < 0) return false;
+
+        return cells.Where((c, i) => i != dateIndex && c.Length > 0 && !TryParseDate(c, DateStyle.Auto, out _))
+            .Any(c => TryParseAmount(c, DecimalStyle.CommaDecimal, out _));
     }
 
     /// <summary>Propone qué columna es cada cosa, por el nombre del encabezado o, si no hay, por el contenido.</summary>

@@ -20,6 +20,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- el proyecto de pruebas vive en una subcarpeta de este: sin esto, sus archivos se compilarían dentro de la app -->
+    <Compile Remove="CholinanzasApp.Tests\**" />
+    <EmbeddedResource Remove="CholinanzasApp.Tests\**" />
+    <None Remove="CholinanzasApp.Tests\**" />
+    <Page Remove="CholinanzasApp.Tests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- los textos legales viajan dentro del .exe: la pantalla de aceptación y la pestaña Ayuda los leen de acá -->
     <EmbeddedResource Include="Legal\Terminos.txt" LogicalName="Terminos.txt" />
     <EmbeddedResource Include="Legal\AVISOS-DE-TERCEROS.txt" LogicalName="AvisosDeTerceros.txt" />
