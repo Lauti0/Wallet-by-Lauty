@@ -87,10 +87,11 @@ public class InstallmentTests : DatabaseTest
 
         Assert.Empty(informed);
         var row = Assert.Single(vm.Installments);
-        Assert.Equal(("Notebook", 12, 0), (row.Description, row.Count, row.Paid));
-        Assert.Equal(1_200_000m, row.Remaining);
+        // la primera cuota es de hoy: ya se registró sola
+        Assert.Equal(("Notebook", 12, 1), (row.Description, row.Count, row.Paid));
+        Assert.Equal(1_100_000m, row.Remaining);
         Assert.Equal(Money.Format(1_200_000m, Currency.ARS), row.TotalText);
-        Assert.Equal(Today.Date, row.NextDate);
+        Assert.Equal(Today.Date.AddMonths(1), row.NextDate);
         Assert.Equal("", vm.NewInstDescription); // el formulario quedó vacío
     }
 
@@ -117,15 +118,27 @@ public class InstallmentTests : DatabaseTest
     // ───────────── Pendientes y proyección ─────────────
 
     [Fact]
-    public void La_cuota_de_este_mes_aparece_como_pendiente_y_resta_en_la_proyeccion_pero_las_de_meses_siguientes_todavia_no()
+    public void La_cuota_cuya_fecha_llego_se_registra_sola_y_las_de_los_meses_siguientes_quedan_pendientes_y_restan_en_la_proyeccion()
     {
-        AddAccount("Banco", Currency.ARS, initial: 500_000m);
-        AddPlan(100_000m, 12, Today, accountId: FirstAccountId());
+        var account = AddAccount("Banco", Currency.ARS, initial: 500_000m);
+        AddPlan(100_000m, 12, Today, accountId: account);
 
         var vm = new MainViewModel();
-        var pending = Assert.Single(vm.Pending);
 
-        Assert.Equal("Notebook (cuota 1/12)", pending.Description);
+        // la cuota 1 (hoy) ya es un gasto real, enlazado al plan
+        using (var db = new AppDbContext())
+        {
+            var tx = db.Transactions.Single();
+            Assert.Equal(("Notebook (cuota 1/12)", 100_000m, 1), (tx.Description, tx.Amount, tx.InstallmentNumber!.Value));
+            Assert.Equal(Today.Date, tx.Date);
+        }
+        Assert.Empty(vm.Pending);
+        Assert.Equal(400_000m, vm.Accounts.Single(a => a.Id == account).Balance);
+
+        // y la del mes que viene es un pendiente que resta en la proyección de ese mes
+        vm.NextMonthCommand.Execute(null);
+        var pending = Assert.Single(vm.Pending);
+        Assert.Equal("Notebook (cuota 2/12)", pending.Description);
         Assert.Equal(-100_000m, pending.SignedAmount);
         Assert.Equal(100_000m, vm.Projection.Single(p => p.Currency == Currency.ARS).PendingExpense);
     }
@@ -139,45 +152,77 @@ public class InstallmentTests : DatabaseTest
         vm.NextMonthCommand.Execute(null);
         vm.NextMonthCommand.Execute(null);
 
-        // este mes + los dos siguientes
-        Assert.Equal([1, 2, 3], vm.Pending.Select(p => int.Parse(p.Description.Split("cuota ")[1].Split('/')[0])).ToList());
+        // la 1 ya se registró sola: faltan la de cada uno de los dos meses siguientes
+        Assert.Equal([2, 3], vm.Pending.Select(p => int.Parse(p.Description.Split("cuota ")[1].Split('/')[0])).ToList());
     }
 
     [Fact]
-    public void Las_cuotas_ya_pagadas_antes_de_cargar_el_plan_no_aparecen_como_pendientes()
+    public void Las_cuotas_ya_pagadas_antes_de_cargar_el_plan_no_se_registran_ni_quedan_pendientes()
     {
         // 12 cuotas, la primera fue hace 3 meses y ya pagué 3: la que toca hoy es la 4
         AddPlan(100m, 12, Today.AddMonths(-3), paidBefore: 3);
 
         var vm = new MainViewModel();
 
-        var pending = Assert.Single(vm.Pending);
-        Assert.Equal("Notebook (cuota 4/12)", pending.Description);
-        Assert.Equal(Today.Date, pending.Date);
-        Assert.Equal(3, vm.Installments.Single().Paid);
-        Assert.Equal(900m, vm.Installments.Single().Remaining);
+        using (var db = new AppDbContext())
+            Assert.Equal(["Notebook (cuota 4/12)"], db.Transactions.Select(t => t.Description).ToList());
+        Assert.Empty(vm.Pending);
+        Assert.Equal(4, vm.Installments.Single().Paid);
+        Assert.Equal(800m, vm.Installments.Single().Remaining);
     }
 
     [Fact]
-    public void Una_cuota_vencida_sin_registrar_sigue_pendiente()
+    public void Una_compra_vieja_registra_cada_cuota_vencida_con_su_fecha_original()
     {
         AddPlan(100m, 3, Today.AddMonths(-2));
 
         var vm = new MainViewModel();
 
-        // cuotas 1 (hace 2 meses), 2 (hace 1 mes) y 3 (hoy): ninguna se registró
-        Assert.Equal(3, vm.Pending.Count);
-        Assert.Equal(Today.AddMonths(-2).Date, vm.Pending.Min(p => p.Date));
+        using var db = new AppDbContext();
+        Assert.Equal(3, db.Transactions.Count());
+        Assert.Equal(Today.AddMonths(-2).Date, db.Transactions.Min(t => t.Date));
+        Assert.Empty(vm.Pending);
+        Assert.Equal("3 de 3 · pagado", vm.Installments.Single().ProgressText);
+    }
+
+    [Fact]
+    public void El_registro_automatico_no_duplica_cuotas_ni_registra_las_futuras()
+    {
+        AddPlan(100m, 12, Today);
+        using var db = new AppDbContext();
+
+        var first = InstallmentService.RegisterDue(db, Today);
+        var second = InstallmentService.RegisterDue(db, Today);
+        var inAMonth = InstallmentService.RegisterDue(db, Today.AddMonths(1));
+
+        Assert.Equal((1, 0, 1), (first, second, inAMonth));
+        Assert.Equal([1, 2], db.Transactions.Select(t => t.InstallmentNumber!.Value).OrderBy(n => n).ToList());
+    }
+
+    [Fact]
+    public void Si_el_usuario_borra_a_mano_el_gasto_de_una_cuota_no_se_vuelve_a_crear_y_queda_pendiente()
+    {
+        AddPlan(100m, 3, Today);
+        var (vm, _) = NewVm();
+        vm.DeleteTransactionCommand.Execute(vm.Transactions.Single());
+
+        var again = new MainViewModel();
+
+        using var db = new AppDbContext();
+        Assert.Empty(db.Transactions);                       // no volvió a aparecer solo
+        var pending = Assert.Single(again.Pending);          // pero la cuota sigue figurando como pendiente
+        Assert.Equal("Notebook (cuota 1/3)", pending.Description);
     }
 
     // ───────────── Registrar una cuota ─────────────
 
     [Fact]
-    public void Registrar_una_cuota_crea_el_gasto_enlazado_la_saca_de_pendientes_y_avanza_el_plan()
+    public void Registrar_a_mano_una_cuota_futura_crea_el_gasto_enlazado_la_saca_de_pendientes_y_avanza_el_plan()
     {
         var account = AddAccount("Visa", Currency.ARS, initial: 0m);
-        var planId = AddPlan(100m, 3, Today, accountId: account);
+        var planId = AddPlan(100m, 3, Today.AddMonths(1), accountId: account);
         var vm = new MainViewModel();
+        vm.NextMonthCommand.Execute(null);
 
         vm.ConfirmPendingCommand.Execute(vm.Pending.Single());
 
@@ -188,20 +233,18 @@ public class InstallmentTests : DatabaseTest
             Assert.Equal((planId, 1), (tx.InstallmentPlanId!.Value, tx.InstallmentNumber!.Value));
             Assert.Null(tx.RecurringId);
         }
-        Assert.Empty(vm.Pending);
+        Assert.DoesNotContain(vm.Pending, p => p.Description.Contains("cuota 1/"));
         Assert.Equal(1, vm.Installments.Single().Paid);
         Assert.Equal(200m, vm.Installments.Single().Remaining);
         Assert.Equal(-100m, vm.Accounts.Single(a => a.Id == account).Balance);
     }
 
     [Fact]
-    public void Registrar_todas_las_cuotas_deja_el_plan_pagado_sin_proxima_fecha()
+    public void Cuando_se_registran_todas_las_cuotas_el_plan_queda_pagado_sin_proxima_fecha()
     {
         AddPlan(100m, 2, Today.AddMonths(-1));
-        var vm = new MainViewModel();
 
-        foreach (var row in vm.Pending.ToList())
-            vm.ConfirmPendingCommand.Execute(row);
+        var vm = new MainViewModel();
 
         var plan = vm.Installments.Single();
         Assert.Empty(vm.Pending);
@@ -214,8 +257,7 @@ public class InstallmentTests : DatabaseTest
     public void Editar_un_plan_cambia_lo_que_falta_y_no_toca_las_cuotas_ya_registradas()
     {
         AddPlan(100m, 3, Today);
-        var (vm, _) = NewVm();
-        vm.ConfirmPendingCommand.Execute(vm.Pending.Single());   // se registra la cuota 1 a $100
+        var (vm, _) = NewVm();                                   // al abrir se registra sola la cuota 1, a $100
 
         vm.EditInstallmentCommand.Execute(vm.Installments.Single());
         vm.NewInstAmount = "150";
@@ -231,8 +273,7 @@ public class InstallmentTests : DatabaseTest
     public void Borrar_un_plan_conserva_las_cuotas_ya_registradas_y_deja_de_proyectar_el_resto()
     {
         AddPlan(100m, 3, Today);
-        var (vm, _) = NewVm();
-        vm.ConfirmPendingCommand.Execute(vm.Pending.Single());
+        var (vm, _) = NewVm();                                   // la cuota 1 ya se registró sola
 
         vm.DeleteInstallmentCommand.Execute(vm.Installments.Single());
 
@@ -287,6 +328,20 @@ public class InstallmentTests : DatabaseTest
         ExportService.ExportExcel(path);
 
         Assert.Contains("Cuotas", ExcelImportService.GetSheetNames(path));
+    }
+
+    [Fact]
+    public void Una_base_con_cuotas_de_la_version_anterior_gana_la_columna_nueva_y_conserva_los_planes()
+    {
+        AddPlan(100m, 3, Today.AddMonths(1));
+        using (var db = new AppDbContext())
+            db.Database.ExecuteSqlRaw("""ALTER TABLE "Installments" DROP COLUMN "AutoRegisteredUpTo" """);
+
+        AppDbContext.Initialize();
+
+        using var after = new AppDbContext();
+        var plan = Assert.Single(after.Installments);
+        Assert.Equal((100m, 0), (plan.InstallmentAmount, plan.AutoRegisteredUpTo));
     }
 
     [Fact]

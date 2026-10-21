@@ -974,7 +974,7 @@
                             <TextBlock Style="{StaticResource EditableTitle}" Tag="{Binding IsEditingInstallment}"
                                        Text="{Binding InstallmentFormTitle}" Margin="0,0,0,2"/>
                             <TextBlock Style="{StaticResource Hint}" Margin="0,0,0,12"
-                                       Text="Para compras con tarjeta de crédito en cuotas. Cada cuota se cobra en el resumen de la tarjeta: cargá la fecha de la primera."/>
+                                       Text="Para compras con tarjeta de crédito en cuotas. Cada cuota se registra sola como gasto cuando llega su fecha: cargá la fecha en que se cobra la primera (la del resumen de la tarjeta)."/>
                             <WrapPanel>
                                 <StackPanel Style="{StaticResource Field}">
                                     <TextBlock Style="{StaticResource FieldLabel}" Text="Qué compraste"/>
@@ -1021,7 +1021,7 @@
                         <StackPanel>
                             <TextBlock Style="{StaticResource SectionTitle}" Text="Mis compras en cuotas" Margin="0,0,0,2"/>
                             <TextBlock Style="{StaticResource Hint}" Margin="0,0,0,8"
-                                       Text="Las cuotas que faltan aparecen en Recurrentes → Pendientes de registrar y cuentan en la proyección del mes. Cuando se cobren, apretá Registrar."/>
+                                       Text="Las cuotas futuras aparecen en Recurrentes → Pendientes de registrar y cuentan en la proyección del mes; cuando llega su fecha se registran solas."/>
                             <DataGrid Style="{StaticResource TableGrid}" ItemsSource="{Binding Installments}" MaxHeight="360"
                                       AutomationProperties.Name="Compras en cuotas">
                                 <DataGrid.Columns>
@@ -1633,8 +1633,8 @@
                                 <Run Text="Cuando el alquiler o el sueldo se concreten, entrá a Recurrentes y apretá «Registrar»: ahí se crea el movimiento real. Hasta entonces aparecen como «pendientes» en la proyección."/>
                             </TextBlock>
                             <TextBlock Style="{StaticResource HelpBody}">
-                                <Run FontWeight="SemiBold" Text="Las cuotas de la tarjeta tampoco se cargan solas. "/>
-                                <Run Text="Cargá la compra en la pestaña Cuotas y cada mes, cuando te llegue el resumen, andá a Recurrentes y apretá «Registrar» en la cuota que toca. Mientras tanto cuenta en la proyección."/>
+                                <Run FontWeight="SemiBold" Text="Las cuotas de la tarjeta se registran solas. "/>
+                                <Run Text="Cargá la compra en la pestaña Cuotas: cada cuota se anota como gasto cuando llega su fecha, y las que faltan cuentan en la proyección. Si cargás una compra vieja, poné en «Ya pagadas» las que ya pagaste para que no se anoten de nuevo."/>
                             </TextBlock>
                             <TextBlock Style="{StaticResource HelpBody}">
                                 <Run FontWeight="SemiBold" Text="Una transferencia no es un gasto ni un ingreso. "/>

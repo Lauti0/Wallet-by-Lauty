@@ -230,6 +230,7 @@ public partial class MainViewModel : ViewModelBase
     private void Reload()
     {
         using var db = new AppDbContext();
+        InstallmentService.RegisterDue(db, DateTime.Today); // las cuotas cuya fecha llegó se registran solas
         var accounts = db.Accounts.AsNoTracking().OrderBy(a => a.Name).ToList();
         var all = db.Transactions.AsNoTracking()
             .Include(t => t.Account).Include(t => t.Category).ToList();

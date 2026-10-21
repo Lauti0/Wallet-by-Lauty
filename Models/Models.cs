@@ -131,6 +131,9 @@ public class InstallmentPlan
     /// <summary>Cuotas que ya estaban pagadas al cargar el plan (no se registran como movimientos).</summary>
     public int PaidBefore { get; set; }
 
+    /// <summary>Hasta qué número de cuota ya se registró sola (al llegar su fecha). Así, un gasto borrado a mano no se vuelve a crear.</summary>
+    public int AutoRegisteredUpTo { get; set; }
+
     public int AccountId { get; set; }
     public Account Account { get; set; } = null!;
 

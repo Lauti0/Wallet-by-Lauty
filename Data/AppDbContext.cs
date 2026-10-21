@@ -116,12 +116,19 @@ public class AppDbContext : DbContext
                 "Count" INTEGER NOT NULL,
                 "FirstDate" TEXT NOT NULL,
                 "PaidBefore" INTEGER NOT NULL,
+                "AutoRegisteredUpTo" INTEGER NOT NULL DEFAULT 0,
                 "AccountId" INTEGER NOT NULL,
                 "CategoryId" INTEGER NOT NULL,
                 CONSTRAINT "FK_Installments_Accounts_AccountId" FOREIGN KEY ("AccountId") REFERENCES "Accounts" ("Id") ON DELETE CASCADE,
                 CONSTRAINT "FK_Installments_Categories_CategoryId" FOREIGN KEY ("CategoryId") REFERENCES "Categories" ("Id") ON DELETE CASCADE
             );
             """);
+
+        var hasAutoUpTo = db.Database
+            .SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM pragma_table_info('Installments') WHERE name = 'AutoRegisteredUpTo'")
+            .AsEnumerable().First() > 0;
+        if (!hasAutoUpTo)
+            db.Database.ExecuteSqlRaw("""ALTER TABLE "Installments" ADD COLUMN "AutoRegisteredUpTo" INTEGER NOT NULL DEFAULT 0""");
 
         var hasPlanId = db.Database
             .SqlQueryRaw<int>("SELECT COUNT(*) AS Value FROM pragma_table_info('Transactions') WHERE name = 'InstallmentPlanId'")

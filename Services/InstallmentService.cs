@@ -1,4 +1,6 @@
+using CholinanzasApp.Data;
 using CholinanzasApp.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CholinanzasApp.Services;
 
@@ -23,6 +25,45 @@ public static class InstallmentService
         var done = registeredNumbers.ToHashSet();
         for (var n = plan.PaidBefore + 1; n <= plan.Count; n++)
             if (!done.Contains(n)) yield return n;
+    }
+
+    /// <summary>
+    /// Registra como gasto las cuotas cuya fecha ya llegó y todavía no se registraron. Cada plan recuerda hasta qué cuota
+    /// se hizo, así que un gasto que el usuario borre después no se vuelve a crear. Devuelve cuántas cuotas se registraron.
+    /// </summary>
+    public static int RegisterDue(AppDbContext db, DateTime today)
+    {
+        var plans = db.Installments.Where(p => p.AutoRegisteredUpTo < p.Count).ToList();
+        if (plans.Count == 0) return 0;
+
+        var ids = plans.Select(p => p.Id).ToList();
+        var registered = db.Transactions.AsNoTracking()
+            .Where(t => t.InstallmentPlanId != null && ids.Contains(t.InstallmentPlanId.Value) && t.InstallmentNumber != null)
+            .Select(t => new { PlanId = t.InstallmentPlanId!.Value, Number = t.InstallmentNumber!.Value })
+            .ToList().ToLookup(t => t.PlanId, t => t.Number);
+
+        var created = 0;
+        foreach (var plan in plans)
+        {
+            var lastDue = plan.AutoRegisteredUpTo;
+            foreach (var n in Unregistered(plan, registered[plan.Id]))
+            {
+                if (DateOf(plan, n) > today) break;
+                lastDue = Math.Max(lastDue, n);
+                if (n <= plan.AutoRegisteredUpTo) continue;
+                db.Transactions.Add(new FinanceTransaction
+                {
+                    Date = DateOf(plan, n), Amount = plan.InstallmentAmount, Type = TransactionType.Gasto,
+                    Description = $"{plan.Description} (cuota {n}/{plan.Count})",
+                    AccountId = plan.AccountId, CategoryId = plan.CategoryId,
+                    InstallmentPlanId = plan.Id, InstallmentNumber = n
+                });
+                created++;
+            }
+            plan.AutoRegisteredUpTo = lastDue;
+        }
+        db.SaveChanges();
+        return created;
     }
 
     /// <summary>Texto de avance: "cuota 4 de 12" (la próxima a pagar) o "pagado" si ya terminó.</summary>
